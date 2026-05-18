@@ -20,6 +20,7 @@
     amberSoft: "#FEF3C7",
     red: "#DC2626",
     redSoft: "#FEE2E2",
+    purple: "#7C3AED",
     graySoft: "#F1F5F9",
   };
 
@@ -29,7 +30,7 @@
     { name: "_Audit", rows: 200, cols: 15 },
     { name: "log__sample_member", rows: 200, cols: 26 },
     { name: "log__sample_host", rows: 200, cols: 26 },
-    { name: "_Dashboard", rows: 60, cols: 12 },
+    { name: "_Dashboard", rows: 80, cols: 17 },
   ];
 
   const desiredSheetNames = desiredSheets.map((definition) => definition.name);
@@ -144,27 +145,86 @@
   };
 
   const dashboard = sheets["_Dashboard"];
-  clearTemplateRange(dashboard, "_Dashboard", "A1:L60");
+  clearTemplateRange(dashboard, "_Dashboard", "A1:Q80");
   dashboard.setHiddenGridlines(true);
-  dashboard.setGridLinesColor("#D7DEE8");
-  dashboard.setFrozenRows(7);
+  dashboard.setGridLinesColor(colors.grid);
+  dashboard.setFrozenRows(8);
   dashboard.setFrozenColumns(2);
-  dashboard.getRange("A1:L1").merge({ isForceMerge: true });
-  dashboard.getRange("A1").setValue("Univer Team Standup");
+  dashboard.getRange("A1:Q80").setBackgroundColor(colors.canvas);
+  dashboard.getRange("A1:L2").merge({ isForceMerge: true });
+  dashboard.getRange("A1").setValue("Univer Team Pulse");
   dashboard
-    .getRange("A1:L1")
-    .setBackgroundColor("#18212D")
-    .setFontColor("#F5F8FB")
+    .getRange("A1:L2")
+    .setBackgroundColor(colors.navy)
+    .setFontColor("#F8FAFC")
     .setFontWeight("bold")
-    .setFontSize(16)
+    .setFontSize(20)
     .setVerticalAlignment("middle");
-  dashboard.setRowHeight(0, 34);
-  dashboard.getRange("A3:H4").setValues([
-    ["date", "Use generateDay date", "updated", "0/0", "blockers", "0", "daily_report", "Not generated"],
-    ["mode", "local template preview", "sync_status", "not_synced", "risks", "0", "preview", "use univer view"],
+  dashboard.getRange("N1:Q1").merge({ isForceMerge: true });
+  dashboard.getRange("N1").setValue("Morning Standup · Local preview · no auto sync");
+  dashboard
+    .getRange("N1:Q1")
+    .setBackgroundColor(colors.navy2)
+    .setFontColor("#BFDBFE")
+    .setFontWeight("bold")
+    .setFontSize(11)
+    .setVerticalAlignment("middle");
+  setHeights(dashboard, [
+    [0, 30],
+    [1, 30],
+    [2, 28],
+    [3, 34],
+    [4, 28],
+    [5, 34],
+    [7, 28],
   ]);
-  dashboard.getRange("A3:H4").setBackgroundColor("#F7F9FC").setVerticalAlignment("middle");
-  dashboard.getRange("A7:L7").setValues([[
+
+  dashboard.getRange("A3:L6").setBackgroundColor(colors.panel).setVerticalAlignment("middle");
+  ["A3:B4", "C3:D4", "E3:F4", "G3:H4", "I3:L4", "A5:B6", "C5:D6", "E5:F6", "G5:H6", "I5:L6"].forEach((rangeA1) => {
+    dashboard.getRange(rangeA1).setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, colors.grid);
+  });
+  dashboard.getRange("A3").setValue("UPDATE RATE");
+  dashboard.getRange("A4").setFormula('=IFERROR(COUNTIFS($A$9:$A$60,"<>",$C$9:$C$60,"updated")&"/"&COUNTIFS($A$9:$A$60,"<>",$C$9:$C$60,"<>sample / inactive"),"0/0")');
+  dashboard.getRange("C3").setValue("MISSING");
+  dashboard.getRange("C4").setFormula('=COUNTIFS($C$9:$C$60,"<>updated",$C$9:$C$60,"<>sample / inactive",$A$9:$A$60,"<>")');
+  dashboard.getRange("E3").setValue("BLOCKERS");
+  dashboard.getRange("E4").setFormula('=COUNTIFS($F$9:$F$60,"<>",$C$9:$C$60,"<>sample / inactive",$A$9:$A$60,"<>")');
+  dashboard.getRange("G3").setValue("RISKS");
+  dashboard.getRange("G4").setFormula('=COUNTIFS($G$9:$G$60,"<>",$C$9:$C$60,"<>sample / inactive",$A$9:$A$60,"<>")');
+  dashboard.getRange("I3").setValue("DAILY REPORT");
+  dashboard.getRange("I4").setValue("Not generated");
+  dashboard.getRange("A5").setValue("MODE");
+  dashboard.getRange("A6").setValue("local template preview");
+  dashboard.getRange("C5").setValue("SYNC");
+  dashboard.getRange("C6").setValue("not_synced");
+  dashboard.getRange("E5").setValue("PREVIEW");
+  dashboard.getRange("E6").setValue("use univer view");
+  dashboard.getRange("G5").setValue("FOCUS");
+  dashboard.getRange("G6").setValue("team rhythm + personal action");
+  dashboard.getRange("I5").setValue("NEXT");
+  dashboard.getRange("I6").setValue("onboard members, then append");
+  dashboard
+    .getRange("A3:L3")
+    .setFontColor(colors.muted)
+    .setFontWeight("bold")
+    .setFontSize(9);
+  dashboard
+    .getRange("A5:L5")
+    .setFontColor(colors.muted)
+    .setFontWeight("bold")
+    .setFontSize(9);
+  dashboard
+    .getRange("A4:L4")
+    .setFontColor(colors.text)
+    .setFontWeight("bold")
+    .setFontSize(16);
+  dashboard
+    .getRange("A6:L6")
+    .setFontColor(colors.text)
+    .setFontWeight("bold")
+    .setFontSize(12);
+
+  dashboard.getRange("A8:L8").setValues([[
     "owner_id",
     "display_name",
     "update_status",
@@ -178,7 +238,7 @@
     "preview_status",
     "report_path",
   ]]);
-  dashboard.getRange("A8:L9").setValues([
+  dashboard.getRange("A9:L10").setValues([
     [
       "sample-member",
       "Sample Member",
@@ -209,9 +269,35 @@
       "",
     ],
   ]);
-  styleHeader(dashboard.getRange("A7:L7"), "#EEF3F8");
-  dashboard.getRange("A8:L9").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, "#D7DEE8");
-  setWidths(dashboard, [140, 150, 170, 260, 280, 220, 220, 260, 210, 230, 160, 260]);
+  styleHeader(dashboard.getRange("A8:L8"), colors.header, colors.text);
+  dashboard.getRange("A8:L8").setFontSize(10);
+  dashboard.getRange("A9:L10").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, colors.grid);
+  dashboard.getRange("A9:L60").setVerticalAlignment("top");
+  dashboard.getRange("D9:H60").setVerticalAlignment("top");
+
+  dashboard.getRange("N2:Q6").setBackgroundColor(colors.panel).setVerticalAlignment("middle");
+  dashboard.getRange("N2:Q2").setValues([["metric", "value", "color", "note"]]);
+  dashboard.getRange("N3").setValue("updated");
+  dashboard.getRange("O3").setFormula('=COUNTIFS($A$9:$A$60,"<>",$C$9:$C$60,"updated")');
+  dashboard.getRange("P3").setValue(colors.blue);
+  dashboard.getRange("Q3").setValue("members with fresh standup");
+  dashboard.getRange("N4").setValue("missing");
+  dashboard.getRange("O4").setFormula('=COUNTIFS($C$9:$C$60,"<>updated",$C$9:$C$60,"<>sample / inactive",$A$9:$A$60,"<>")');
+  dashboard.getRange("P4").setValue(colors.amber);
+  dashboard.getRange("Q4").setValue("needs morning update");
+  dashboard.getRange("N5").setValue("blockers");
+  dashboard.getRange("O5").setFormula('=COUNTIFS($F$9:$F$60,"<>",$C$9:$C$60,"<>sample / inactive",$A$9:$A$60,"<>")');
+  dashboard.getRange("P5").setValue(colors.red);
+  dashboard.getRange("Q5").setValue("explicit blockers");
+  dashboard.getRange("N6").setValue("risks");
+  dashboard.getRange("O6").setFormula('=COUNTIFS($G$9:$G$60,"<>",$C$9:$C$60,"<>sample / inactive",$A$9:$A$60,"<>")');
+  dashboard.getRange("P6").setValue(colors.purple);
+  dashboard.getRange("Q6").setValue("risk notes raised");
+  styleHeader(dashboard.getRange("N2:Q2"), colors.header, colors.text);
+  dashboard.getRange("N2:Q6").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, colors.grid);
+
+  setWidths(dashboard, [140, 150, 160, 280, 300, 220, 220, 270, 210, 220, 160, 260, 24, 120, 100, 110, 180]);
+  dashboard.setRowHeights(8, 52, 54);
 
   const people = sheets["_People"];
   clearTemplateRange(people, "_People", "A1:K80");
@@ -426,7 +512,7 @@
     createdSheets,
     deletedSheets,
     clearedRanges,
-    dashboardRange: "_Dashboard!A1:L9",
+    dashboardRange: "_Dashboard!A1:Q80",
     personalLogRange: "log__sample_member!A1:Z2",
   };
 };
