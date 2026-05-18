@@ -102,7 +102,12 @@ async (providedUniverAPI) => {
   };
 
   const sheets = {};
-  desiredSheets.forEach((definition) => {
+  const sheetCreationOrder = [
+    ...desiredSheets.filter((definition) => definition.name !== "Dashboard"),
+    ...desiredSheets.filter((definition) => definition.name === "Dashboard"),
+  ];
+
+  sheetCreationOrder.forEach((definition) => {
     sheets[definition.name] = ensureSheet(definition);
   });
 
@@ -113,6 +118,8 @@ async (providedUniverAPI) => {
       workbook.deleteSheet(sheet.getSheetId());
     }
   });
+
+  workbook.moveSheet(sheets["Dashboard"], 0);
 
   const styleHeader = (range, background, color = "#17202A") => {
     range
