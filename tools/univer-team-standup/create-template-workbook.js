@@ -49,8 +49,15 @@ async (providedUniverAPI) => {
       return true;
     }
 
-    const values = sheet.getRange(0, 0, lastRow + 1, lastColumn + 1).getValues();
-    return values.every((row) => row.every((value) => isBlankCell(value)));
+    const range = sheet.getRange(0, 0, lastRow + 1, lastColumn + 1);
+    const values = range.getValues();
+    const formulas = typeof range.getFormulas === "function" ? range.getFormulas() : [];
+    return values.every((row, rowIndex) =>
+      row.every((value, columnIndex) => {
+        const formula = formulas[rowIndex] && formulas[rowIndex][columnIndex];
+        return isBlankCell(value) && isBlankCell(formula);
+      })
+    );
   };
 
   for (const sheet of workbook.getSheets()) {
