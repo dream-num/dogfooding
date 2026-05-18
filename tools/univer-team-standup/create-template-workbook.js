@@ -33,7 +33,17 @@
 
   for (const sheet of workbook.getSheets()) {
     const name = sheet.getSheetName();
-    if (!desiredSheetNames.includes(name) && !sheetAppearsEmpty(sheet)) {
+    const isDesiredSheet = desiredSheetNames.includes(name);
+    const isEmptySheet = sheetAppearsEmpty(sheet);
+    if (isDesiredSheet && !isEmptySheet) {
+      return {
+        success: false,
+        error: "Existing template sheet contains data; refusing to regenerate template",
+        sheetName: name,
+      };
+    }
+
+    if (!isDesiredSheet && !isEmptySheet) {
       return {
         success: false,
         error: "Unexpected non-empty sheet found; refusing to regenerate template",
