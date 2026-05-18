@@ -1,5 +1,6 @@
-() => {
-  const workbook = univerAPI.getActiveWorkbook();
+async (providedUniverAPI) => {
+  const api = providedUniverAPI || univerAPI;
+  const workbook = api.getActiveWorkbook();
 
   const colors = {
     navy: "#0F172A",
@@ -139,10 +140,22 @@
     sheet.addConditionalFormattingRule(rule);
   };
 
+  const addSampleLogConditionalFormatting = (sheet) => {
+    addTextRule(sheet, "E2:E200", "done", colors.greenSoft, colors.green, true);
+    addTextRule(sheet, "E2:E200", "needs_review", colors.amberSoft, colors.amber, true);
+    addFormulaRule(sheet, "G2:G200", "=LEN($G2)>0", colors.redSoft, colors.red, true);
+    addFormulaRule(sheet, "H2:H200", "=LEN($H2)>0", colors.amberSoft, colors.amber, true);
+    return 4;
+  };
+
   const clearTemplateRange = (sheet, sheetName, a1) => {
     sheet.getRange(a1).clear();
     clearedRanges.push(`${sheetName}!${a1}`);
   };
+
+  let dashboardConditionalFormatRules = 0;
+  let peopleConditionalFormatRules = 0;
+  let sampleLogConditionalFormatRules = 0;
 
   const dashboard = sheets["_Dashboard"];
   clearTemplateRange(dashboard, "_Dashboard", "A1:Q80");
@@ -181,7 +194,7 @@
 
   dashboard.getRange("A3:L6").setBackgroundColor(colors.panel).setVerticalAlignment("middle");
   ["A3:B4", "C3:D4", "E3:F4", "G3:H4", "I3:L4", "A5:B6", "C5:D6", "E5:F6", "G5:H6", "I5:L6"].forEach((rangeA1) => {
-    dashboard.getRange(rangeA1).setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, colors.grid);
+    dashboard.getRange(rangeA1).setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
   });
   dashboard.getRange("A3").setValue("UPDATE RATE");
   dashboard.getRange("A4").setFormula('=IFERROR(COUNTIFS($A$9:$A$60,"<>",$C$9:$C$60,"updated")&"/"&COUNTIFS($A$9:$A$60,"<>",$C$9:$C$60,"<>sample / inactive"),"0/0")');
@@ -271,9 +284,16 @@
   ]);
   styleHeader(dashboard.getRange("A8:L8"), colors.header, colors.text);
   dashboard.getRange("A8:L8").setFontSize(10);
-  dashboard.getRange("A9:L10").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, colors.grid);
+  dashboard.getRange("A9:L10").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
   dashboard.getRange("A9:L60").setVerticalAlignment("top");
   dashboard.getRange("D9:H60").setVerticalAlignment("top");
+  addTextRule(dashboard, "C9:C60", "updated", colors.greenSoft, colors.green, true);
+  addTextRule(dashboard, "C9:C60", "No update", colors.amberSoft, colors.amber, true);
+  addTextRule(dashboard, "C9:C60", "sample / inactive", colors.graySoft, colors.muted, false);
+  addFormulaRule(dashboard, "F9:F60", "=LEN($F9)>0", colors.redSoft, colors.red, true);
+  addFormulaRule(dashboard, "G9:G60", "=LEN($G9)>0", colors.amberSoft, colors.amber, true);
+  addTextRule(dashboard, "K9:K60", "local preview", colors.blueSoft, colors.blue, false);
+  dashboardConditionalFormatRules += 6;
 
   dashboard.getRange("N2:Q6").setBackgroundColor(colors.panel).setVerticalAlignment("middle");
   dashboard.getRange("N2:Q2").setValues([["metric", "value", "color", "note"]]);
@@ -294,7 +314,7 @@
   dashboard.getRange("P6").setValue(colors.purple);
   dashboard.getRange("Q6").setValue("risk notes raised");
   styleHeader(dashboard.getRange("N2:Q2"), colors.header, colors.text);
-  dashboard.getRange("N2:Q6").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, colors.grid);
+  dashboard.getRange("N2:Q6").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
 
   setWidths(dashboard, [140, 150, 160, 280, 300, 220, 220, 270, 210, 220, 160, 260, 24, 120, 100, 110, 180]);
   dashboard.setRowHeights(8, 52, 54);
@@ -346,8 +366,11 @@
     ],
   ]);
   styleHeader(people.getRange("A1:K1"), "#EEF3F8");
-  people.getRange("A1:K3").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, "#D7DEE8");
+  people.getRange("A1:K3").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, "#D7DEE8");
   setWidths(people, [150, 160, 160, 230, 190, 220, 180, 150, 160, 100, 230]);
+  addTextRule(people, "J2:J80", "TRUE", colors.greenSoft, colors.green, true);
+  addTextRule(people, "J2:J80", "FALSE", colors.redSoft, colors.red, true);
+  peopleConditionalFormatRules += 2;
 
   const reports = sheets["_Reports"];
   clearTemplateRange(reports, "_Reports", "A1:N120");
@@ -370,7 +393,7 @@
     "raw_note",
   ]]);
   styleHeader(reports.getRange("A1:N1"), "#EEF3F8");
-  reports.getRange("A1:N1").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, "#D7DEE8");
+  reports.getRange("A1:N1").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, "#D7DEE8");
   setWidths(reports, [180, 130, 160, 230, 170, 130, 300, 220, 140, 160, 140, 160, 220, 300]);
 
   const audit = sheets["_Audit"];
@@ -395,7 +418,7 @@
     "raw_note",
   ]]);
   styleHeader(audit.getRange("A1:O1"), "#EEF3F8");
-  audit.getRange("A1:O1").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, "#D7DEE8");
+  audit.getRange("A1:O1").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, "#D7DEE8");
   setWidths(audit, [190, 230, 150, 230, 110, 170, 170, 120, 210, 260, 260, 160, 220, 120, 320]);
 
   const log = sheets["log__sample_member"];
@@ -496,15 +519,53 @@
     "sample-20260518-sample-member-001",
   ]]);
   styleLogSheet(log);
-  log.getRange("A1:Z2").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, "#D7DEE8");
+  sampleLogConditionalFormatRules += addSampleLogConditionalFormatting(log);
+  log.getRange("A1:Z2").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, "#D7DEE8");
 
   ["log__sample_host"].forEach((sheetName) => {
     const personalSheet = sheets[sheetName];
     clearTemplateRange(personalSheet, sheetName, "A1:Z200");
     personalSheet.getRange("A1:Z1").setValues([logHeaders]);
     styleLogSheet(personalSheet);
-    personalSheet.getRange("A1:Z1").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, "#D7DEE8");
+    sampleLogConditionalFormatRules += addSampleLogConditionalFormatting(personalSheet);
+    personalSheet.getRange("A1:Z1").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, "#D7DEE8");
   });
+
+  await api.getFormula().onCalculationResultApplied();
+
+  let chartResult = {
+    attempted: true,
+    inserted: false,
+    error: null,
+    message: "Chart insertion not attempted",
+  };
+  try {
+    const chartInfo = dashboard
+      .newChart()
+      .setChartType(api.Enum.ChartType.Column)
+      .addRange("N2:O6")
+      .setPosition(2, 13, 0, 0)
+      .setWidth(360)
+      .setHeight(240)
+      .setOptions("title.content", "Team Pulse")
+      .build();
+    const chart = await dashboard.insertChart(chartInfo);
+    chartResult = {
+      attempted: true,
+      inserted: true,
+      error: null,
+      message: `Inserted chart ${chart.getChartId()}`,
+      chartCount: dashboard.getCharts().length,
+    };
+  } catch (error) {
+    chartResult = {
+      attempted: true,
+      inserted: false,
+      error: error && error.name ? error.name : "ChartInsertError",
+      message: error && error.message ? error.message : String(error),
+      chartCount: dashboard.getCharts ? dashboard.getCharts().length : 0,
+    };
+  }
 
   return {
     success: true,
@@ -512,7 +573,12 @@
     createdSheets,
     deletedSheets,
     clearedRanges,
-    dashboardRange: "_Dashboard!A1:Q80",
+    dashboardRange: "_Dashboard!A1:Q12",
+    chartSourceRange: "_Dashboard!N2:Q6",
     personalLogRange: "log__sample_member!A1:Z2",
+    dashboardConditionalFormatRules,
+    peopleConditionalFormatRules,
+    sampleLogConditionalFormatRules,
+    dashboardCharts: chartResult,
   };
 };
