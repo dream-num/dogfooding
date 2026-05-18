@@ -1,6 +1,28 @@
 () => {
   const workbook = univerAPI.getActiveWorkbook();
 
+  const colors = {
+    navy: "#0F172A",
+    navy2: "#142033",
+    panel: "#FFFFFF",
+    canvas: "#F6F8FB",
+    grid: "#D8E0EA",
+    header: "#EEF4FB",
+    text: "#142033",
+    muted: "#64748B",
+    blue: "#2563EB",
+    blueSoft: "#DBEAFE",
+    teal: "#0D9488",
+    tealSoft: "#CCFBF1",
+    green: "#16A34A",
+    greenSoft: "#DCFCE7",
+    amber: "#D97706",
+    amberSoft: "#FEF3C7",
+    red: "#DC2626",
+    redSoft: "#FEE2E2",
+    graySoft: "#F1F5F9",
+  };
+
   const desiredSheets = [
     { name: "_People", rows: 80, cols: 11 },
     { name: "_Reports", rows: 120, cols: 14 },
@@ -84,6 +106,36 @@
 
   const setWidths = (sheet, widths) => {
     widths.forEach((width, index) => sheet.setColumnWidth(index, width));
+  };
+
+  const setHeights = (sheet, heights) => {
+    heights.forEach(([rowIndex, height]) => sheet.setRowHeight(rowIndex, height));
+  };
+
+  const addTextRule = (sheet, rangeA1, text, background, fontColor, bold = false) => {
+    const range = sheet.getRange(rangeA1);
+    const rule = sheet
+      .newConditionalFormattingRule()
+      .whenTextContains(text)
+      .setBackground(background)
+      .setFontColor(fontColor)
+      .setBold(bold)
+      .setRanges([range.getRange()])
+      .build();
+    sheet.addConditionalFormattingRule(rule);
+  };
+
+  const addFormulaRule = (sheet, rangeA1, formula, background, fontColor, bold = false) => {
+    const range = sheet.getRange(rangeA1);
+    const rule = sheet
+      .newConditionalFormattingRule()
+      .whenFormulaSatisfied(formula)
+      .setBackground(background)
+      .setFontColor(fontColor)
+      .setBold(bold)
+      .setRanges([range.getRange()])
+      .build();
+    sheet.addConditionalFormattingRule(rule);
   };
 
   const clearTemplateRange = (sheet, sheetName, a1) => {
