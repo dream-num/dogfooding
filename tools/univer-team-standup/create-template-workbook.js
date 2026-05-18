@@ -311,8 +311,8 @@ async (providedUniverAPI) => {
   dashboard.getRange("Q5").setValue("explicit blockers");
   dashboard.getRange("N6").setValue("risks");
   dashboard.getRange("O6").setFormula('=COUNTIFS($G$9:$G$60,"<>",$C$9:$C$60,"<>sample / inactive",$A$9:$A$60,"<>")');
-  dashboard.getRange("P6").setValue(colors.purple);
-  dashboard.getRange("Q6").setValue("risk notes raised");
+  dashboard.getRange("P6").setValue(colors.amber);
+  dashboard.getRange("Q6").setValue("active risk count");
   styleHeader(dashboard.getRange("N2:Q2"), colors.header, colors.text);
   dashboard.getRange("N2:Q6").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
 
@@ -369,7 +369,7 @@ async (providedUniverAPI) => {
   people.getRange("A1:K3").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, "#D7DEE8");
   setWidths(people, [150, 160, 160, 230, 190, 220, 180, 150, 160, 100, 230]);
   addTextRule(people, "J2:J80", "TRUE", colors.greenSoft, colors.green, true);
-  addTextRule(people, "J2:J80", "FALSE", colors.redSoft, colors.red, true);
+  addTextRule(people, "J2:J80", "FALSE", colors.graySoft, colors.muted, false);
   peopleConditionalFormatRules += 2;
 
   const reports = sheets["_Reports"];
