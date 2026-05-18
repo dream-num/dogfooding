@@ -42,7 +42,7 @@ The workbook should feel like a lightweight team pulse board:
 
 ### Header Zone
 
-Use rows 1-2 for a compact identity band:
+Use `A1:L2` for the compact identity band:
 
 - Title: `Univer Team Pulse`
 - Subtitle/status: `Morning Standup · Local preview · no auto sync`
@@ -93,7 +93,7 @@ Improve it with:
 
 ### Pulse Data And Charts
 
-Add a visually de-emphasized chart source range on `_Dashboard` at `N2:Q6`.
+Add a visually de-emphasized chart source range on `_Dashboard` at `N2:Q6`. Do not merge or place header content over this range.
 
 Source data should support:
 
