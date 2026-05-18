@@ -38,7 +38,7 @@ Never commit `.univer-agent/` files.
 - update only its own `Dashboard` row
 - write `Audit` entries for its own actions
 
-`member` must not write another member's row, another member's sheet, report indexes, non-member workflow data, or global publish state.
+`member` must not write another member's row, another member's sheet, team-level indexes, non-member workflow data, or global publish state.
 
 ## Profile Contract
 
@@ -61,19 +61,21 @@ Required JSON shape:
 Do not guess `owner_id`, `display_name`, `agent_id`, or `personal_sheet`.
 
 - `owner_id`: stable, lowercase, sheet-safe, `^[a-z0-9][a-z0-9_-]{1,39}$`
-- `personal_sheet`: default `log__<owner_id>` unless the user confirms another value
+- `personal_sheet`: exactly `log__<owner_id>` for schema v0.2; do not accept alternate names
 - `timezone`: controls `date` and `log_id`
+
+If `profile.personal_sheet` is not exactly `log__<owner_id>`, stop before writing and ask the user to migrate intentionally.
 
 ## Workflow: Onboard
 
 Use when the user asks to register/init/onboard or append without a profile.
 
 1. Check `univer` or `unv`.
-2. Collect required profile fields and confirm `personal_sheet`.
+2. Collect required profile fields and confirm the generated `personal_sheet` value is exactly `log__<owner_id>`.
 3. Write `.univer-agent/profile.json`; read it back.
 4. Run `univer pull ops/team-ops.univer`. If unbound, say this is local template preview only.
 5. Inspect workbook, `People`, and `Dashboard` through public CLI reads.
-6. Stop if `People` already has the same `owner_id` with a different `personal_sheet`.
+6. Stop if `People` already has the same `owner_id` with a `personal_sheet` other than `log__<owner_id>` and ask the user to migrate intentionally.
 7. If the personal sheet is missing, create it with the Personal Log header below.
 8. Add/update only this owner's `People` row with `是否启用=是`.
 9. Add/update only this owner's `Dashboard` row with `更新状态=待更新`.
@@ -113,7 +115,9 @@ Only run when the user explicitly asks to commit/sync/publish.
 
 ## Workbook Contract
 
-Expected sheets: `Dashboard`, `People`, `Audit`, `log__<owner_id>`.
+Template sheets: `Dashboard`, `People`, `Audit`, `log__sample_member`.
+
+Runtime member sheets: onboarding creates `log__<owner_id>` for real members; append writes only to the current profile's exact `log__<owner_id>`.
 
 Headers:
 
