@@ -231,9 +231,9 @@ async (providedUniverAPI) => {
   dashboard.getRange("J5").setValue("风险");
   dashboard.getRange("J6").setFormula('=COUNTIFS($G$16:$G$80,"<>",$A$16:$A$80,"<>")');
   dashboard.getRange("M5").setValue("最后写入");
-  dashboard.getRange("M6").setFormula('=IFERROR(LOOKUP(2,1/($J$16:$J$80<>""),$J$16:$J$80),"-")');
+  dashboard.getRange("M6").setFormula('=IF(COUNT($L$16:$L$80)=0,"-",INDEX($J$16:$J$80,MATCH(MAX($L$16:$L$80),$L$16:$L$80,0)))');
   dashboard.getRange("A7").setValue("来自成员看板");
-  dashboard.getRange("D7").setValue("等待 member append");
+  dashboard.getRange("D7").setValue("等待成员记录");
   dashboard.getRange("G7").setValue("红色高亮");
   dashboard.getRange("J7").setValue("琥珀色高亮");
   dashboard.getRange("M7").setValue("最近更新时间");
@@ -307,6 +307,12 @@ async (providedUniverAPI) => {
   dashboard.getRange("A15:K80").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
   dashboard.getRange("A16:K80").setVerticalAlignment("top");
   dashboard.getRange("D16:H80").setWrap(true).setVerticalAlignment("top");
+  dashboard.getRange("L16:L80").setValues(
+    Array.from({ length: 65 }, (_, index) => {
+      const row = index + 16;
+      return [`=IFERROR(VALUE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(LEFT($J${row},19),"-",""),"T",""),":","")),"")`];
+    })
+  );
 
   addTextRule(dashboard, "C16:C80", "已更新", colors.greenSoft, colors.green, true);
   addTextRule(dashboard, "C16:C80", "待更新", colors.amberSoft, colors.amber, true);
