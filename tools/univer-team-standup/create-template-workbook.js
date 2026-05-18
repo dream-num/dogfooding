@@ -2,13 +2,13 @@
   const workbook = univerAPI.getActiveWorkbook();
 
   const desiredSheets = [
-    { name: "_Dashboard", rows: 60, cols: 12 },
     { name: "_People", rows: 80, cols: 11 },
     { name: "_Reports", rows: 120, cols: 14 },
     { name: "_Audit", rows: 200, cols: 15 },
     { name: "log__yangluoshen", rows: 200, cols: 26 },
     { name: "log__host", rows: 200, cols: 26 },
     { name: "log__example-member", rows: 200, cols: 26 },
+    { name: "_Dashboard", rows: 60, cols: 12 },
   ];
 
   const desiredSheetNames = desiredSheets.map((definition) => definition.name);
