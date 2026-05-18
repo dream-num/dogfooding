@@ -26,14 +26,13 @@ async (providedUniverAPI) => {
   };
 
   const desiredSheets = [
-    { name: "_People", rows: 80, cols: 11 },
-    { name: "_Reports", rows: 120, cols: 14 },
-    { name: "_Audit", rows: 200, cols: 15 },
+    { name: "Dashboard", rows: 90, cols: 18 },
+    { name: "People", rows: 80, cols: 10 },
+    { name: "Audit", rows: 200, cols: 10 },
     { name: "log__sample_member", rows: 200, cols: 26 },
-    { name: "log__sample_host", rows: 200, cols: 26 },
-    { name: "_Dashboard", rows: 80, cols: 17 },
   ];
 
+  const legacyTemplateSheets = new Set(["_Dashboard", "_People", "_Reports", "_Audit", "log__sample_host"]);
   const desiredSheetNames = desiredSheets.map((definition) => definition.name);
   const createdSheets = [];
   const deletedSheets = [];
@@ -57,19 +56,21 @@ async (providedUniverAPI) => {
   for (const sheet of workbook.getSheets()) {
     const name = sheet.getSheetName();
     const isDesiredSheet = desiredSheetNames.includes(name);
+    const isLegacyTemplateSheet = legacyTemplateSheets.has(name);
     const isEmptySheet = sheetAppearsEmpty(sheet);
+
     if (isDesiredSheet && !isEmptySheet) {
       return {
         success: false,
-        error: "Existing template sheet contains data; refusing to regenerate template",
+        error: "Existing member dashboard template sheet contains data; refusing to regenerate template",
         sheetName: name,
       };
     }
 
-    if (!isDesiredSheet && !isEmptySheet) {
+    if (!isDesiredSheet && !isLegacyTemplateSheet && !isEmptySheet) {
       return {
         success: false,
-        error: "Unexpected non-empty sheet found; refusing to regenerate template",
+        error: "Unexpected non-empty sheet found; refusing to regenerate member dashboard template",
         sheetName: name,
       };
     }
@@ -155,6 +156,7 @@ async (providedUniverAPI) => {
 
   let dashboardConditionalFormatRules = 0;
   let peopleConditionalFormatRules = 0;
+  let auditConditionalFormatRules = 0;
   let sampleLogConditionalFormatRules = 0;
 
   const dashboard = sheets["_Dashboard"];
