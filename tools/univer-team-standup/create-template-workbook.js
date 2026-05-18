@@ -5,9 +5,8 @@
     { name: "_People", rows: 80, cols: 11 },
     { name: "_Reports", rows: 120, cols: 14 },
     { name: "_Audit", rows: 200, cols: 15 },
-    { name: "log__yangluoshen", rows: 200, cols: 26 },
-    { name: "log__host", rows: 200, cols: 26 },
-    { name: "log__example-member", rows: 200, cols: 26 },
+    { name: "log__sample_member", rows: 200, cols: 26 },
+    { name: "log__sample_host", rows: 200, cols: 26 },
     { name: "_Dashboard", rows: 60, cols: 12 },
   ];
 
@@ -109,8 +108,8 @@
     .setVerticalAlignment("middle");
   dashboard.setRowHeight(0, 34);
   dashboard.getRange("A3:H4").setValues([
-    ["date", "2026-05-18", "updated", "2/3", "blockers", "1", "daily_report", "Not generated"],
-    ["mode", "local template preview", "sync_status", "not_synced", "risks", "1", "preview", "use univer view"],
+    ["date", "Use generateDay date", "updated", "0/0", "blockers", "0", "daily_report", "Not generated"],
+    ["mode", "local template preview", "sync_status", "not_synced", "risks", "0", "preview", "use univer view"],
   ]);
   dashboard.getRange("A3:H4").setBackgroundColor("#F7F9FC").setVerticalAlignment("middle");
   dashboard.getRange("A7:L7").setValues([[
@@ -127,52 +126,39 @@
     "preview_status",
     "report_path",
   ]]);
-  dashboard.getRange("A8:L10").setValues([
+  dashboard.getRange("A8:L9").setValues([
     [
-      "yangluoshen",
-      "yangluoshen",
-      "updated",
-      "Confirmed workbook-led MVP scope",
-      "Create skill and workbook template",
+      "sample-member",
+      "Sample Member",
+      "sample / inactive",
+      "Example yesterday text",
+      "Example today text",
       "",
-      "Remote workbook is not bound yet",
-      "Bind shared workbook before team usage",
-      "20260518-yangluoshen-001",
-      "2026-05-18T09:00:00+08:00",
-      "local preview",
+      "",
+      "Run onboarding to create a real member row",
+      "",
+      "",
+      "sample only",
       "",
     ],
     [
-      "host",
-      "Standup Host",
-      "updated",
-      "Prepared daily report flow",
-      "Generate daily standup HTML",
+      "sample-host",
+      "Sample Host",
+      "sample / inactive",
       "",
-      "",
-      "Run generateDay after members append",
-      "",
-      "2026-05-18T09:05:00+08:00",
-      "local preview",
-      "",
-    ],
-    [
-      "example-member",
-      "Example Member",
-      "No update / Needs follow-up",
+      "Generate daily standup HTML after members append",
       "",
       "",
       "",
+      "Run generateDay after real members append",
       "",
-      "Ask member to append before standup",
       "",
-      "",
-      "pending",
+      "sample only",
       "",
     ],
   ]);
   styleHeader(dashboard.getRange("A7:L7"), "#EEF3F8");
-  dashboard.getRange("A8:L10").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, "#D7DEE8");
+  dashboard.getRange("A8:L9").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, "#D7DEE8");
   setWidths(dashboard, [140, 150, 170, 260, 280, 220, 220, 260, 210, 230, 160, 260]);
 
   const people = sheets["_People"];
@@ -193,49 +179,36 @@
     "active",
     "updated_at",
   ]]);
-  people.getRange("A2:K4").setValues([
+  people.getRange("A2:K3").setValues([
     [
-      "yangluoshen",
-      "yangluoshen",
-      "yangluoshen",
-      "codex-yangluoshen-local",
-      "log__yangluoshen",
-      "dream-num/univer-cli",
-      "Univer CLI",
-      "Asia/Shanghai",
-      "member,host",
-      "TRUE",
-      "2026-05-18T09:00:00+08:00",
-    ],
-    [
-      "host",
-      "Standup Host",
+      "sample-member",
+      "Sample Member",
       "",
-      "codex-standup-host-local",
-      "log__host",
-      "dream-num/univer-cli",
-      "Univer CLI",
-      "Asia/Shanghai",
-      "host",
-      "TRUE",
-      "2026-05-18T09:05:00+08:00",
-    ],
-    [
-      "example-member",
-      "Example Member",
-      "",
-      "codex-example-member-local",
-      "log__example-member",
+      "codex-sample-member-local",
+      "log__sample_member",
       "dream-num/univer-cli",
       "Univer CLI",
       "Asia/Shanghai",
       "member",
-      "TRUE",
+      "FALSE",
       "2026-05-18T09:10:00+08:00",
+    ],
+    [
+      "sample-host",
+      "Sample Host",
+      "",
+      "codex-sample-host-local",
+      "log__sample_host",
+      "dream-num/univer-cli",
+      "Univer CLI",
+      "Asia/Shanghai",
+      "host",
+      "FALSE",
+      "2026-05-18T09:15:00+08:00",
     ],
   ]);
   styleHeader(people.getRange("A1:K1"), "#EEF3F8");
-  people.getRange("A1:K4").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, "#D7DEE8");
+  people.getRange("A1:K3").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, "#D7DEE8");
   setWidths(people, [150, 160, 160, 230, 190, 220, 180, 150, 160, 100, 230]);
 
   const reports = sheets["_Reports"];
@@ -287,7 +260,7 @@
   audit.getRange("A1:O1").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, "#D7DEE8");
   setWidths(audit, [190, 230, 150, 230, 110, 170, 170, 120, 210, 260, 260, 160, 220, 120, 320]);
 
-  const log = sheets["log__yangluoshen"];
+  const log = sheets["log__sample_member"];
   const logHeaders = [
     "log_id",
     "date",
@@ -354,40 +327,40 @@
     styleHeader(sheet.getRange("T1:Z1"), "#F7F2E8");
     setWidths(sheet, logWidths);
   };
-  clearTemplateRange(log, "log__yangluoshen", "A1:Z200");
+  clearTemplateRange(log, "log__sample_member", "A1:Z200");
   log.getRange("A1:Z1").setValues([logHeaders]);
   log.getRange("A2:Z2").setValues([[
-    "20260518-yangluoshen-001",
+    "20260518-sample-member-001",
     "2026-05-18",
-    "yangluoshen",
-    "Design univer-team-standup MVP",
-    "done",
-    "P1",
+    "sample-member",
+    "Example standup item",
+    "needs_review",
+    "P2",
     "",
-    "Remote workbook is not bound yet",
-    "Create skill and template workbook",
+    "",
+    "Run onboarding before using the workbook for a real member",
     "dream-num/univer-cli",
     "feat-univer-morning-standup",
-    "SPEC#2026-05-18",
-    "feature",
+    "SAMPLE#2026-05-18",
+    "example",
     "Dogfooding",
-    "M",
-    "Confirmed MVP scope and workbook-led approach",
-    "Write implementation plan and create template",
-    "Team can dogfood standup workflow",
-    "docs/superpowers/specs/2026-05-18-univer-team-standup-design.md",
-    "manual",
-    "codex-yangluoshen-local",
-    0.95,
-    "Seed example row for local template preview.",
-    "2026-05-18T09:00:00+08:00",
-    "2026-05-18T09:00:00+08:00",
-    "seed-20260518-yangluoshen-001",
+    "S",
+    "Example yesterday text",
+    "Example today text",
+    "Demonstrates column layout only",
+    "docs/univer-team-standup-first-run.md",
+    "sample",
+    "codex-sample-member-local",
+    0.5,
+    "Inactive sample row. Host reports must ignore this row because _People.active is FALSE.",
+    "2026-05-18T09:10:00+08:00",
+    "",
+    "sample-20260518-sample-member-001",
   ]]);
   styleLogSheet(log);
   log.getRange("A1:Z2").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, "#D7DEE8");
 
-  ["log__host", "log__example-member"].forEach((sheetName) => {
+  ["log__sample_host"].forEach((sheetName) => {
     const personalSheet = sheets[sheetName];
     clearTemplateRange(personalSheet, sheetName, "A1:Z200");
     personalSheet.getRange("A1:Z1").setValues([logHeaders]);
@@ -401,7 +374,7 @@
     createdSheets,
     deletedSheets,
     clearedRanges,
-    dashboardRange: "_Dashboard!A1:L10",
-    personalLogRange: "log__yangluoshen!A1:Z2",
+    dashboardRange: "_Dashboard!A1:L9",
+    personalLogRange: "log__sample_member!A1:Z2",
   };
 };
