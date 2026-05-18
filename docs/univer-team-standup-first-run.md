@@ -6,14 +6,14 @@ This guide explains how a member starts using `univer-team-standup` while keepin
 
 1. Ask your agent to use `univer-team-standup` and run `onboard`.
 2. Provide `owner_id`, `display_name`, `github_handle`, `agent_id`, `timezone`, `default_repo`, and `default_project`.
-3. Confirm the proposed `personal_sheet`, normally `log__<owner_id>`.
+3. Confirm the generated `personal_sheet` is exactly `log__<owner_id>`.
 4. Let the agent create `.univer-agent/profile.json`, register your own `People` row, create your own personal log sheet if missing, and create your own `Dashboard` row.
 5. Preview the workbook.
 6. Ask the agent to `append` or `记录进展`.
 7. Review the candidate row before the agent writes.
 8. Preview again after write.
 
-Local onboarding and local append are not visible to other members until you explicitly ask for commit/sync or the team uses another agreed publishing flow.
+Local onboarding and local append are not visible to other members until you explicitly ask for commit/sync or the team uses a team-agreed publishing flow.
 
 ## Member: Normal Morning
 
