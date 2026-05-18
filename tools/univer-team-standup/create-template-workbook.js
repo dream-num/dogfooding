@@ -11,9 +11,45 @@
     { name: "log__example-member", rows: 200, cols: 26 },
   ];
 
+  const desiredSheetNames = desiredSheets.map((definition) => definition.name);
+  const createdSheets = [];
+  const deletedSheets = [];
+  const clearedRanges = [];
+
+  const isBlankCell = (value) => value === null || value === undefined || value === "";
+
+  const sheetAppearsEmpty = (sheet) => {
+    const getLastRow = () => sheet.getLastRow();
+    const getLastColumn = () => sheet.getLastColumn();
+    const lastRow = getLastRow();
+    const lastColumn = getLastColumn();
+    if (lastRow < 0 || lastColumn < 0) {
+      return true;
+    }
+
+    const values = sheet.getRange(0, 0, lastRow + 1, lastColumn + 1).getValues();
+    return values.every((row) => row.every((value) => isBlankCell(value)));
+  };
+
+  for (const sheet of workbook.getSheets()) {
+    const name = sheet.getSheetName();
+    if (!desiredSheetNames.includes(name) && !sheetAppearsEmpty(sheet)) {
+      return {
+        success: false,
+        error: "Unexpected non-empty sheet found; refusing to regenerate template",
+        sheetName: name,
+      };
+    }
+  }
+
   const ensureSheet = ({ name, rows, cols }) => {
     const existing = workbook.getSheetByName(name);
-    return existing || workbook.create(name, rows, cols);
+    if (existing) {
+      return existing;
+    }
+
+    createdSheets.push(name);
+    return workbook.create(name, rows, cols);
   };
 
   const sheets = {};
@@ -23,7 +59,8 @@
 
   workbook.getSheets().forEach((sheet) => {
     const name = sheet.getSheetName();
-    if (!desiredSheets.some((definition) => definition.name === name)) {
+    if (!desiredSheetNames.includes(name)) {
+      deletedSheets.push(name);
       workbook.deleteSheet(sheet.getSheetId());
     }
   });
@@ -40,8 +77,13 @@
     widths.forEach((width, index) => sheet.setColumnWidth(index, width));
   };
 
+  const clearTemplateRange = (sheet, sheetName, a1) => {
+    sheet.getRange(a1).clear();
+    clearedRanges.push(`${sheetName}!${a1}`);
+  };
+
   const dashboard = sheets["_Dashboard"];
-  dashboard.getRange("A1:L60").clear();
+  clearTemplateRange(dashboard, "_Dashboard", "A1:L60");
   dashboard.setHiddenGridlines(true);
   dashboard.setGridLinesColor("#D7DEE8");
   dashboard.setFrozenRows(7);
@@ -124,7 +166,7 @@
   setWidths(dashboard, [140, 150, 170, 260, 280, 220, 220, 260, 210, 230, 160, 260]);
 
   const people = sheets["_People"];
-  people.getRange("A1:K80").clear();
+  clearTemplateRange(people, "_People", "A1:K80");
   people.setHiddenGridlines(true);
   people.setFrozenRows(1);
   people.setFrozenColumns(2);
@@ -187,7 +229,7 @@
   setWidths(people, [150, 160, 160, 230, 190, 220, 180, 150, 160, 100, 230]);
 
   const reports = sheets["_Reports"];
-  reports.getRange("A1:N120").clear();
+  clearTemplateRange(reports, "_Reports", "A1:N120");
   reports.setHiddenGridlines(true);
   reports.setFrozenRows(1);
   reports.getRange("A1:N1").setValues([[
@@ -211,7 +253,7 @@
   setWidths(reports, [180, 130, 160, 230, 170, 130, 300, 220, 140, 160, 140, 160, 220, 300]);
 
   const audit = sheets["_Audit"];
-  audit.getRange("A1:O200").clear();
+  clearTemplateRange(audit, "_Audit", "A1:O200");
   audit.setHiddenGridlines(true);
   audit.setFrozenRows(1);
   audit.getRange("A1:O1").setValues([[
@@ -302,7 +344,7 @@
     styleHeader(sheet.getRange("T1:Z1"), "#F7F2E8");
     setWidths(sheet, logWidths);
   };
-  log.getRange("A1:Z200").clear();
+  clearTemplateRange(log, "log__yangluoshen", "A1:Z200");
   log.getRange("A1:Z1").setValues([logHeaders]);
   log.getRange("A2:Z2").setValues([[
     "20260518-yangluoshen-001",
@@ -337,7 +379,7 @@
 
   ["log__host", "log__example-member"].forEach((sheetName) => {
     const personalSheet = sheets[sheetName];
-    personalSheet.getRange("A1:Z200").clear();
+    clearTemplateRange(personalSheet, sheetName, "A1:Z200");
     personalSheet.getRange("A1:Z1").setValues([logHeaders]);
     styleLogSheet(personalSheet);
     personalSheet.getRange("A1:Z1").setBorder(univerAPI.Enum.BorderType.ALL, univerAPI.Enum.BorderStyleTypes.THIN, "#D7DEE8");
@@ -346,6 +388,9 @@
   return {
     success: true,
     sheets: workbook.getSheets().map((sheet) => sheet.getSheetName()),
+    createdSheets,
+    deletedSheets,
+    clearedRanges,
     dashboardRange: "_Dashboard!A1:L10",
     personalLogRange: "log__yangluoshen!A1:Z2",
   };
