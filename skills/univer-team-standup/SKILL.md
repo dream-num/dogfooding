@@ -22,11 +22,19 @@ The workbook may start as a local template. When the team starts shared usage, t
 
 ## Trigger Intents
 
+Use onboarding mode for:
+
+- `onboard`
+- `init profile`
+- `初始化晨会身份`
+- `注册成员`
+- first `append` request when `.univer-agent/profile.json` is missing
+
 Use member mode for:
 
 - `append`
 - `记录进展`
-- `同步今天进展`
+- `同步今天进展` (local append only; this does not mean remote sync)
 - `写日报`
 - `更新晨会表`
 - requests to summarize visible work into the standup workbook
@@ -57,10 +65,15 @@ This is one skill with two execution roles.
 - update only the current profile's row in `_Dashboard`
 - write `_Audit` entries for its own actions
 - preview the workbook
+- create `.univer-agent/profile.json` for the current user during onboarding
+- create the current user's own `log__<owner_id>` sheet during onboarding if it is missing
+- add or update the current user's own `_People` row during onboarding
 
 `member` must not:
 
 - write another person's `log__*` sheet
+- create or update another person's `_People` row
+- mark another person active or inactive
 - update another person's `_Dashboard` row
 - update `_Dashboard` global summary cells
 - write `_Reports`
@@ -79,7 +92,9 @@ Before host actions, read `.univer-agent/profile.json`. If `standup_roles` does 
 
 ## Profile
 
-If `.univer-agent/profile.json` is missing, initialize it before writing workbook data. Required fields:
+If `.univer-agent/profile.json` is missing, run the First-Run Onboarding Workflow before writing workbook data.
+
+Required fields:
 
 ```json
 {
@@ -97,6 +112,35 @@ If `.univer-agent/profile.json` is missing, initialize it before writing workboo
 ```
 
 Do not guess missing `owner_id`, `display_name`, `agent_id`, or `personal_sheet`. Ask the user for missing required identity fields.
+
+`owner_id` must be stable, lowercase, and safe for sheet names. Use `^[a-z0-9][a-z0-9_-]{1,39}$`.
+
+`personal_sheet` must be `log__<owner_id>` unless the user explicitly confirms a different sheet name.
+
+`timezone` controls `date`, `log_id`, and default `generateDay()` date. Do not use the runtime machine timezone when a profile timezone is present.
+
+Never commit `.univer-agent/profile.json` or `.univer-agent/dependency-check.json`.
+
+## First-Run Onboarding Workflow
+
+Run this workflow when the user asks to onboard/register/init, or when `append` is requested and `.univer-agent/profile.json` is missing.
+
+1. Check `univer` or `unv` availability.
+2. Collect required identity fields: `owner_id`, `display_name`, `github_handle`, `agent_id`, `timezone`, `default_repo`, and `default_project`.
+3. Propose `personal_sheet` as `log__<owner_id>` and wait for user confirmation.
+4. Write `.univer-agent/profile.json` locally and read it back.
+5. Run `univer pull ops/team-ops.univer` before workbook writes. If the workbook is an unbound local template, state that onboarding is local preview only.
+6. Inspect `_People`, `_Dashboard`, and workbook sheet names through `univer inspect workbook` and bounded `univer pipe out`.
+7. If `_People` already has `owner_id` with a different `personal_sheet`, stop and show the conflicting row.
+8. If `profile.personal_sheet` is missing, create it through `univer run` with the Personal log header from this skill.
+9. Add or update only the current user's `_People` row with `active=TRUE` and `standup_roles=member` unless the user explicitly confirms `host`.
+10. Add or update only the current user's `_Dashboard` row with `update_status=No update / Needs append`.
+11. Append an `_Audit` row with `action=onboard`.
+12. Read back the created or updated `_People`, `_Dashboard`, and personal sheet header ranges.
+13. Preview with `univer view ops/team-ops.univer --no-open --json` or `univer view ops/team-ops.univer --open --json` depending on the environment.
+14. Stop. Do not commit or sync by default.
+
+After local onboarding, tell the user that the host will not see this registration until the user explicitly asks to commit/sync or the workbook is otherwise published through the team workflow.
 
 ## Workbook Schema
 
@@ -144,23 +188,24 @@ log_id,date,owner_id,work_item_title,status,priority,blocker,risk,next_action,re
 
 1. Check `univer` or `unv` availability.
 2. Check whether dependency verification is needed. Avoid weekly network checks unless the state file is missing, older than 7 days, the user requests an update, or a CLI/skill failure suggests a version problem.
-3. Read `.univer-agent/profile.json`; initialize missing profile only after collecting required identity fields.
+3. Read `.univer-agent/profile.json`. If it is missing, run the First-Run Onboarding Workflow, then ask the user whether to continue with append.
 4. Run `univer pull ops/team-ops.univer` before writing. If the workbook is an unbound local template, state that clearly and continue only as local preview.
 5. Inspect workbook-visible state with `univer inspect workbook` and bounded `univer pipe out` or `univer inspect range`.
-6. Generate candidate log rows only from visible evidence:
+6. If `profile.personal_sheet`, the current owner `_People` row, or the current owner `_Dashboard` row is missing, run the onboarding repair subset for only the current owner and read back the repaired ranges before generating candidate rows.
+7. Generate candidate log rows only from visible evidence:
    - user-provided text
    - current conversation work
    - current repo branch, commits, diffs, and test output
    - pasted or accessible GitHub issue/PR content
    - existing workbook records
-7. Show the candidate rows to the user before writing. Wait for confirmation.
-8. Generate `log_id` as `YYYYMMDD-<owner_id>-<seq>` by reading existing same-day rows.
-9. Write only to `profile.personal_sheet`.
-10. Read back the written range and verify key fields.
-11. Update only the current owner's row in `_Dashboard`.
-12. Append an `_Audit` row.
-13. Preview with `univer view ops/team-ops.univer --no-open --json` or `univer view ops/team-ops.univer --open --json` depending on the environment.
-14. Stop. Do not commit or sync by default.
+8. Show the candidate rows to the user before writing. Wait for confirmation.
+9. Generate `log_id` as `YYYYMMDD-<owner_id>-<seq>` by reading existing same-day rows.
+10. Write only to `profile.personal_sheet`.
+11. Read back the written range and verify key fields.
+12. Update only the current owner's row in `_Dashboard`.
+13. Append an `_Audit` row.
+14. Preview with `univer view ops/team-ops.univer --no-open --json` or `univer view ops/team-ops.univer --open --json` depending on the environment.
+15. Stop. Do not commit or sync by default.
 
 ## Host `generateDay` Workflow
 
@@ -212,6 +257,7 @@ After append:
 - log_id: <log_id>
 - dashboard: updated current owner row
 - preview: <view_url_or_status>
+- visibility: 主持人不会看到这次本地更新，除非你明确要求 commit/sync 或团队已有其他发布流程
 - next: 如需发布，请明确要求 commit/sync
 ```
 
