@@ -67,6 +67,14 @@ async (providedUniverAPI) => {
       };
     }
 
+    if (isLegacyTemplateSheet && !isEmptySheet) {
+      return {
+        success: false,
+        error: "Legacy template sheet contains data; refusing to delete during member dashboard regeneration",
+        sheetName: name,
+      };
+    }
+
     if (!isDesiredSheet && !isLegacyTemplateSheet && !isEmptySheet) {
       return {
         success: false,
@@ -209,7 +217,7 @@ async (providedUniverAPI) => {
   dashboard.getRange("J5").setValue("风险");
   dashboard.getRange("J6").setFormula('=COUNTIFS($G$16:$G$80,"<>",$A$16:$A$80,"<>")');
   dashboard.getRange("M5").setValue("最后写入");
-  dashboard.getRange("M6").setFormula('=IFERROR(MAX($J$16:$J$80),"-")');
+  dashboard.getRange("M6").setFormula('=IFERROR(LOOKUP(2,1/($J$16:$J$80<>""),$J$16:$J$80),"-")');
   dashboard.getRange("A7").setValue("来自成员看板");
   dashboard.getRange("D7").setValue("等待 member append");
   dashboard.getRange("G7").setValue("红色高亮");
