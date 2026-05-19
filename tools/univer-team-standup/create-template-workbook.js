@@ -26,7 +26,7 @@ async (providedUniverAPI) => {
   };
 
   const desiredSheets = [
-    { name: "Dashboard", rows: 90, cols: 18 },
+    { name: "Dashboard", rows: 90, cols: 23 },
     { name: "People", rows: 80, cols: 10 },
     { name: "Audit", rows: 200, cols: 10 },
     { name: "log__sample_member", rows: 200, cols: 26 },
@@ -137,6 +137,16 @@ async (providedUniverAPI) => {
     heights.forEach(([rowIndex, height]) => sheet.setRowHeight(rowIndex, height));
   };
 
+  const logRange = (row, columnLetter) => `INDIRECT($S${row}&"!${columnLetter}2:${columnLetter}200")`;
+
+  const logCell = (row, cellA1) => `INDIRECT($S${row}&"!${cellA1}")`;
+
+  const logTimeNumberExpression = (row) =>
+    `IFERROR(VALUE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(LEFT(${logRange(row, "X")},19),"-",""),"T",""),":","")),0)`;
+
+  const latestLogValueFormula = (row, columnLetter) =>
+    `=IF($V${row}<>"有日志","",IF($U${row}="","",IFERROR(INDEX(${logRange(row, columnLetter)},$U${row})&"","")))`;
+
   const addTextRule = (sheet, rangeA1, text, background, fontColor, bold = false) => {
     const range = sheet.getRange(rangeA1);
     const rule = sheet
@@ -166,9 +176,11 @@ async (providedUniverAPI) => {
   const addSampleLogConditionalFormatting = (sheet) => {
     addTextRule(sheet, "E2:E200", "已完成", colors.greenSoft, colors.green, true);
     addTextRule(sheet, "E2:E200", "待确认", colors.amberSoft, colors.amber, true);
+    addTextRule(sheet, "F2:F200", "P0", colors.redSoft, colors.red, true);
+    addTextRule(sheet, "F2:F200", "P1", colors.amberSoft, colors.amber, true);
     addFormulaRule(sheet, "G2:G200", "=LEN($G2)>0", colors.redSoft, colors.red, true);
     addFormulaRule(sheet, "H2:H200", "=LEN($H2)>0", colors.amberSoft, colors.amber, true);
-    return 4;
+    return 6;
   };
 
   const clearTemplateRange = (sheet, sheetName, a1) => {
@@ -182,12 +194,12 @@ async (providedUniverAPI) => {
   let sampleLogConditionalFormatRules = 0;
 
   const dashboard = sheets["Dashboard"];
-  clearTemplateRange(dashboard, "Dashboard", "A1:R90");
+  clearTemplateRange(dashboard, "Dashboard", "A1:W90");
   dashboard.setHiddenGridlines(true);
   dashboard.setGridLinesColor(colors.grid);
   dashboard.setFrozenRows(3);
   dashboard.setFrozenColumns(0);
-  dashboard.getRange("A1:R90").setBackgroundColor(colors.canvas);
+  dashboard.getRange("A1:W90").setBackgroundColor(colors.canvas);
 
   dashboard.getRange("A1:L3").merge({ isForceMerge: true });
   dashboard.getRange("A1").setValue("团队晨会驾驶舱");
@@ -225,13 +237,13 @@ async (providedUniverAPI) => {
   dashboard.getRange("A5").setValue("已更新成员");
   dashboard.getRange("A6").setFormula('=COUNTIFS($A$11:$A$89,"<>",$C$11:$C$89,"已更新")');
   dashboard.getRange("D5").setValue("待更新");
-  dashboard.getRange("D6").setFormula('=COUNTIFS($A$11:$A$89,"<>",$C$11:$C$89,"<>已更新")');
+  dashboard.getRange("D6").setFormula('=COUNTIFS($A$11:$A$89,"<>",$C$11:$C$89,"<>已更新",$C$11:$C$89,"<>")');
   dashboard.getRange("G5").setValue("阻塞");
   dashboard.getRange("G6").setFormula('=COUNTIFS($F$11:$F$89,"<>",$A$11:$A$89,"<>")');
   dashboard.getRange("J5").setValue("风险");
   dashboard.getRange("J6").setFormula('=COUNTIFS($G$11:$G$89,"<>",$A$11:$A$89,"<>")');
   dashboard.getRange("M5").setValue("最后写入");
-  dashboard.getRange("M6").setFormula('=IF(COUNT($L$11:$L$89)=0,"-",INDEX($J$11:$J$89,MATCH(MAX($L$11:$L$89),$L$11:$L$89,0)))');
+  dashboard.getRange("M6").setFormula('=IF(COUNT($T$11:$T$89)=0,"-",INDEX($J$11:$J$89,MATCH(MAX($T$11:$T$89),$T$11:$T$89,0)))');
   dashboard.getRange("A7").setValue("来自成员看板");
   dashboard.getRange("D7").setValue("等待成员记录");
   dashboard.getRange("G7").setValue("红色高亮");
@@ -264,30 +276,21 @@ async (providedUniverAPI) => {
     .setFontSize(12);
   dashboard.getRange("M11:R28").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
 
-  dashboard.getRange("M30:R34").setBackgroundColor("#F8FAFC").setVerticalAlignment("middle");
-  dashboard.getRange("M30:R30").setValues([["指标", "数值", "颜色", "说明", "状态", ""]]);
-  dashboard.getRange("M31").setValue("已更新");
-  dashboard.getRange("N31").setFormula('=COUNTIFS($A$11:$A$89,"<>",$C$11:$C$89,"已更新")');
-  dashboard.getRange("O31").setValue(colors.green);
-  dashboard.getRange("P31").setValue("已完成当天更新的成员");
-  dashboard.getRange("Q31").setValue("正常");
-  dashboard.getRange("M32").setValue("待更新");
-  dashboard.getRange("N32").setFormula('=COUNTIFS($A$11:$A$89,"<>",$C$11:$C$89,"<>已更新")');
-  dashboard.getRange("O32").setValue(colors.amber);
-  dashboard.getRange("P32").setValue("需要补充晨会内容");
-  dashboard.getRange("Q32").setValue("关注");
-  dashboard.getRange("M33").setValue("阻塞");
-  dashboard.getRange("N33").setFormula('=COUNTIFS($F$11:$F$89,"<>",$A$11:$A$89,"<>")');
-  dashboard.getRange("O33").setValue(colors.red);
-  dashboard.getRange("P33").setValue("需要当天处理");
-  dashboard.getRange("Q33").setValue("高优先级");
-  dashboard.getRange("M34").setValue("风险");
-  dashboard.getRange("N34").setFormula('=COUNTIFS($G$11:$G$89,"<>",$A$11:$A$89,"<>")');
-  dashboard.getRange("O34").setValue(colors.amber);
-  dashboard.getRange("P34").setValue("需要持续关注");
-  dashboard.getRange("Q34").setValue("观察");
+  dashboard.getRange("M30:R39").setBackgroundColor("#F8FAFC").setVerticalAlignment("middle");
+  dashboard.getRange("M30:R39").setValues([
+    ["指标", "数值", "颜色", "说明", "状态", ""],
+    ["启用成员", '=COUNTIF($A$11:$A$89,"<>")', colors.blue, "People 中启用的成员", "规模", ""],
+    ["今日已更新", '=COUNTIFS($A$11:$A$89,"<>",$C$11:$C$89,"已更新")', colors.green, "今天已经提交日志", "健康", ""],
+    ["待更新", '=COUNTIFS($A$11:$A$89,"<>",$C$11:$C$89,"待更新")', colors.amber, "需要补充晨会更新", "关注", ""],
+    ["阻塞", '=COUNTIFS($A$11:$A$89,"<>",$F$11:$F$89,"<>")', colors.red, "最近日志包含阻塞", "处理", ""],
+    ["风险", '=COUNTIFS($A$11:$A$89,"<>",$G$11:$G$89,"<>")', colors.amber, "最近日志包含风险", "观察", ""],
+    ["缺日志表", '=COUNTIFS($A$11:$A$89,"<>",$V$11:$V$89,"缺日志表")', colors.red, "成员缺少 log__member 表", "修复", ""],
+    ["无日志", '=COUNTIFS($A$11:$A$89,"<>",$V$11:$V$89,"无日志")', colors.muted, "日志表存在但没有数据", "冷启动", ""],
+    ["今日更新率", "=IF(N31=0,0,N32/N31)", colors.teal, "今日已更新 / 启用成员", "比率", ""],
+    ["数据异常", "=N36+N37", colors.red, "缺日志表 + 无日志", "质量", ""],
+  ]);
   styleHeader(dashboard.getRange("M30:R30"), colors.header, colors.text);
-  dashboard.getRange("M30:R34").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
+  dashboard.getRange("M30:R39").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
 
   dashboard.getRange("A10:K10").setValues([[
     "成员ID",
@@ -308,21 +311,58 @@ async (providedUniverAPI) => {
   dashboard.getRange("A10:K89").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
   dashboard.getRange("A11:K89").setVerticalAlignment("top");
   dashboard.getRange("D11:H89").setWrap(true).setVerticalAlignment("top");
-  dashboard.getRange("L11:L89").setValues(
+  dashboard.getRange("A11:K89").setValues(
     Array.from({ length: 79 }, (_, index) => {
       const row = index + 11;
-      return [`=IFERROR(VALUE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(LEFT($J${row},19),"-",""),"T",""),":","")),"")`];
+      const peopleRow = index + 2;
+      return [
+        `=IF(People!$I${peopleRow}="是",People!$A${peopleRow},"")`,
+        `=IF($A${row}="","",IFERROR(INDEX(People!$B$2:$B$80,MATCH($A${row},People!$A$2:$A$80,0)),""))`,
+        `=IF($A${row}="","",IF($V${row}="缺日志表","缺日志表",IF($V${row}="无日志","无日志",IF($J${row}="","待更新",IF(LEFT($J${row},10)=TEXT(TODAY(),"yyyy-mm-dd"),"已更新","待更新")))))`,
+        latestLogValueFormula(row, "P"),
+        latestLogValueFormula(row, "Q"),
+        latestLogValueFormula(row, "G"),
+        latestLogValueFormula(row, "H"),
+        latestLogValueFormula(row, "I"),
+        latestLogValueFormula(row, "A"),
+        latestLogValueFormula(row, "X"),
+        `=IF($A${row}="","",IF($V${row}="缺日志表","缺日志表",IF($V${row}="无日志","无日志",IF($J${row}="","缺创建时间",IF(LEFT($J${row},10)=TEXT(TODAY(),"yyyy-mm-dd"),"今日已同步","需要更新")))))`,
+      ];
+    })
+  );
+  dashboard.getRange("S11:W89").setValues(
+    Array.from({ length: 79 }, (_, index) => {
+      const row = index + 11;
+      const timeNumbers = logTimeNumberExpression(row);
+      return [
+        `=IF($A${row}="","","log__"&$A${row})`,
+        `=IF($A${row}="","",IF($V${row}<>"有日志","",IFERROR(MAX(${timeNumbers}),"")))`,
+        `=IF($T${row}="","",IFERROR(MATCH($T${row},${timeNumbers},0),""))`,
+        `=IF($A${row}="","",IF(IFERROR(${logCell(row, "A1")},"")<>"日志ID","缺日志表",IF(COUNTA(${logRange(row, "A")})=0,"无日志","有日志")))`,
+        `=IF($A${row}="","",IF($V${row}<>"有日志",$V${row},IF($J${row}="","缺创建时间","数据正常")))`,
+      ];
     })
   );
 
   addTextRule(dashboard, "C11:C89", "已更新", colors.greenSoft, colors.green, true);
   addTextRule(dashboard, "C11:C89", "待更新", colors.amberSoft, colors.amber, true);
+  addTextRule(dashboard, "C11:C89", "缺日志表", colors.redSoft, colors.red, true);
+  addTextRule(dashboard, "C11:C89", "无日志", colors.graySoft, colors.muted, false);
   addFormulaRule(dashboard, "F11:F89", "=LEN($F11)>0", colors.redSoft, colors.red, true);
   addFormulaRule(dashboard, "G11:G89", "=LEN($G11)>0", colors.amberSoft, colors.amber, true);
-  addTextRule(dashboard, "K11:K89", "本地预览", colors.blueSoft, colors.blue, false);
-  dashboardConditionalFormatRules += 5;
+  addTextRule(dashboard, "K11:K89", "今日已同步", colors.greenSoft, colors.green, true);
+  addTextRule(dashboard, "K11:K89", "需要更新", colors.amberSoft, colors.amber, true);
+  addTextRule(dashboard, "K11:K89", "缺日志表", colors.redSoft, colors.red, true);
+  addTextRule(dashboard, "K11:K89", "无日志", colors.graySoft, colors.muted, false);
+  addTextRule(dashboard, "K11:K89", "缺创建时间", colors.redSoft, colors.red, true);
+  dashboardConditionalFormatRules += 11;
 
-  setWidths(dashboard, [130, 150, 130, 300, 320, 240, 240, 300, 210, 220, 160, 24, 110, 120, 90, 260, 140, 130]);
+  dashboard.getRange("A6:J6").setNumberFormats([["0", "", "", "0", "", "", "0", "", "", "0"]]);
+  dashboard.getRange("N31:N37").setNumberFormats(Array.from({ length: 7 }, () => ["0"]));
+  dashboard.getRange("N38").setNumberFormats([["0.0%"]]);
+  dashboard.getRange("N39").setNumberFormats([["0"]]);
+
+  setWidths(dashboard, [130, 150, 130, 300, 320, 240, 240, 300, 210, 220, 160, 24, 110, 120, 90, 260, 140, 130, 24, 24, 24, 24, 24]);
   setHeights(dashboard, [
     [0, 34],
     [1, 34],
@@ -334,6 +374,7 @@ async (providedUniverAPI) => {
     [29, 30],
   ]);
   dashboard.setRowHeights(10, 79, 54);
+  dashboard.hideColumns(18, 5);
 
   const people = sheets["People"];
   clearTemplateRange(people, "People", "A1:J80");
@@ -456,6 +497,7 @@ async (providedUniverAPI) => {
   styleLogSheet(log);
   sampleLogConditionalFormatRules += addSampleLogConditionalFormatting(log);
   log.getRange("A1:Z1").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, "#D7DEE8");
+  log.getRange("V2:V200").setNumberFormats(Array.from({ length: 199 }, () => ["0%"]));
 
   await api.getFormula().onCalculationResultApplied();
 
@@ -469,11 +511,11 @@ async (providedUniverAPI) => {
     const chartInfo = dashboard
       .newChart()
       .setChartType(api.Enum.ChartType.Column)
-      .addRange("M30:N34")
+      .addRange("M31:N37")
       .setPosition(10, 12, 0, 0)
       .setWidth(640)
       .setHeight(250)
-      .setOptions("title.content", "更新分布")
+      .setOptions("title.content", "团队更新态势")
       .build();
     const chart = await dashboard.insertChart(chartInfo);
     chartResult = {
@@ -501,8 +543,8 @@ async (providedUniverAPI) => {
     createdSheets,
     deletedSheets,
     clearedRanges,
-    dashboardRange: "Dashboard!A1:R34",
-    chartSourceRange: "Dashboard!M30:R34",
+    dashboardRange: "Dashboard!A1:R39",
+    chartSourceRange: "Dashboard!M30:R39",
     personalLogRange: "log__sample_member!A1:Z1",
     dashboardConditionalFormatRules,
     peopleConditionalFormatRules,

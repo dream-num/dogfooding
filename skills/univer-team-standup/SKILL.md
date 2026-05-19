@@ -35,10 +35,11 @@ Never commit `.univer-agent/` files.
 - create or repair only its own `log__<owner_id>` sheet
 - add or update only its own `People` row
 - append rows only to `profile.personal_sheet`
-- update only its own `Dashboard` row
 - write `Audit` entries for its own actions
 
-`member` must not write another member's row, another member's sheet, team-level indexes, non-member workflow data, or global publish state.
+`Dashboard` is presentation-only. Member progress data belongs in `People` and `log__<owner_id>`; Dashboard formulas derive visible member state from those sources.
+
+`member` must not write another member's row, another member's sheet, team-level indexes, non-member workflow data, Dashboard progress cells, or global publish state.
 
 ## Profile Contract
 
@@ -78,7 +79,7 @@ Use when the user asks to register/init/onboard or append without a profile.
 6. Stop if `People` already has the same `owner_id` with a `personal_sheet` other than `log__<owner_id>` and ask the user to migrate intentionally.
 7. If the personal sheet is missing, create it with the Personal Log header below.
 8. Add/update only this owner's `People` row with `是否启用=是`.
-9. Add/update only this owner's `Dashboard` row with `更新状态=待更新`.
+9. Do not write Dashboard progress cells. The Dashboard row appears from the `People` row and is populated by formulas after logs exist.
 10. Append `Audit` with `操作=onboard`.
 11. Read back changed ranges.
 12. Preview with `univer view`.
@@ -91,13 +92,13 @@ Tell the user other members will not see local onboarding until commit/sync or a
 1. Check `univer`/`unv`; avoid network dependency checks unless missing, older than 7 days, requested, or failure suggests version drift.
 2. Read profile. If missing, run Onboard, then ask whether to continue.
 3. `univer pull ops/team-ops.univer`; if unbound, say this is local preview only.
-4. Inspect workbook-visible state and repair only this owner's missing profile sheet, `People` row, or `Dashboard` row.
+4. Inspect workbook-visible state and repair only this owner's missing profile sheet or `People` row.
 5. Build candidate rows only from visible evidence: user text, current conversation work, git/branch/commit/diff/test output, accessible GitHub content, or existing workbook records.
 6. Show candidate rows and wait for confirmation.
 7. Generate `log_id` as `YYYYMMDD-<owner_id>-<seq>` from existing same-day rows in profile timezone.
 8. Write only to `profile.personal_sheet`.
 9. Read back the written range and verify key fields.
-10. Update only this owner's `Dashboard` row.
+10. Do not write Dashboard progress cells. Dashboard formulas will read the appended `log__<owner_id>` row.
 11. Append `Audit`.
 12. Preview with `univer view`.
 13. Stop. Do not commit or sync.
@@ -119,6 +120,8 @@ Template sheets: `Dashboard`, `People`, `Audit`, `log__sample_member`.
 
 Runtime member sheets: onboarding creates `log__<owner_id>` for real members; append writes only to the current profile's exact `log__<owner_id>`.
 
+Dashboard visible rows are derived. Treat `People` and `log__<owner_id>` as data sources; treat Dashboard as rebuildable presentation.
+
 Headers:
 
 ```csv
@@ -138,7 +141,7 @@ After append:
 - owner: <owner_id>
 - sheet: <personal_sheet>
 - log_id: <log_id>
-- dashboard: 已刷新当前成员行
+- dashboard: 已通过公式从成员日志刷新展示
 - preview: <view_url_or_status>
 - visibility: 其他人不会看到这次本地更新，除非你明确要求 commit/sync 或团队已有其他发布流程
 - next: 如需发布，请明确要求 commit/sync
