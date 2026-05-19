@@ -185,8 +185,8 @@ async (providedUniverAPI) => {
   clearTemplateRange(dashboard, "Dashboard", "A1:R90");
   dashboard.setHiddenGridlines(true);
   dashboard.setGridLinesColor(colors.grid);
-  dashboard.setFrozenRows(15);
-  dashboard.setFrozenColumns(2);
+  dashboard.setFrozenRows(3);
+  dashboard.setFrozenColumns(0);
   dashboard.getRange("A1:R90").setBackgroundColor(colors.canvas);
 
   dashboard.getRange("A1:L3").merge({ isForceMerge: true });
@@ -223,15 +223,15 @@ async (providedUniverAPI) => {
     dashboard.getRange(rangeA1).setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
   });
   dashboard.getRange("A5").setValue("已更新成员");
-  dashboard.getRange("A6").setFormula('=COUNTIFS($A$16:$A$80,"<>",$C$16:$C$80,"已更新")');
+  dashboard.getRange("A6").setFormula('=COUNTIFS($A$11:$A$89,"<>",$C$11:$C$89,"已更新")');
   dashboard.getRange("D5").setValue("待更新");
-  dashboard.getRange("D6").setFormula('=COUNTIFS($A$16:$A$80,"<>",$C$16:$C$80,"<>已更新")');
+  dashboard.getRange("D6").setFormula('=COUNTIFS($A$11:$A$89,"<>",$C$11:$C$89,"<>已更新")');
   dashboard.getRange("G5").setValue("阻塞");
-  dashboard.getRange("G6").setFormula('=COUNTIFS($F$16:$F$80,"<>",$A$16:$A$80,"<>")');
+  dashboard.getRange("G6").setFormula('=COUNTIFS($F$11:$F$89,"<>",$A$11:$A$89,"<>")');
   dashboard.getRange("J5").setValue("风险");
-  dashboard.getRange("J6").setFormula('=COUNTIFS($G$16:$G$80,"<>",$A$16:$A$80,"<>")');
+  dashboard.getRange("J6").setFormula('=COUNTIFS($G$11:$G$89,"<>",$A$11:$A$89,"<>")');
   dashboard.getRange("M5").setValue("最后写入");
-  dashboard.getRange("M6").setFormula('=IF(COUNT($L$16:$L$80)=0,"-",INDEX($J$16:$J$80,MATCH(MAX($L$16:$L$80),$L$16:$L$80,0)))');
+  dashboard.getRange("M6").setFormula('=IF(COUNT($L$11:$L$89)=0,"-",INDEX($J$11:$J$89,MATCH(MAX($L$11:$L$89),$L$11:$L$89,0)))');
   dashboard.getRange("A7").setValue("来自成员看板");
   dashboard.getRange("D7").setValue("等待成员记录");
   dashboard.getRange("G7").setValue("红色高亮");
@@ -252,43 +252,44 @@ async (providedUniverAPI) => {
     .setFontColor(colors.muted)
     .setFontSize(10);
 
-  dashboard.getRange("A10:R13").setBackgroundColor(colors.panel).setVerticalAlignment("middle");
-  dashboard.getRange("A10:R10").merge({ isForceMerge: true });
-  dashboard.getRange("A10").setValue("更新分布");
+  dashboard.getRange("A10:K89").setBackgroundColor(colors.panel).setVerticalAlignment("middle");
+  dashboard.getRange("M10:R28").setBackgroundColor(colors.panel).setVerticalAlignment("middle");
+  dashboard.getRange("M10:R10").merge({ isForceMerge: true });
+  dashboard.getRange("M10").setValue("更新分布");
   dashboard
-    .getRange("A10:R10")
+    .getRange("M10:R10")
     .setBackgroundColor("#EAF1FF")
     .setFontColor(colors.text)
     .setFontWeight("bold")
     .setFontSize(12);
-  dashboard.getRange("A11:R13").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
+  dashboard.getRange("M11:R28").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
 
-  dashboard.getRange("N11:R15").setBackgroundColor("#F8FAFC").setVerticalAlignment("middle");
-  dashboard.getRange("N11:R11").setValues([["指标", "数值", "颜色", "说明", "状态"]]);
-  dashboard.getRange("N12").setValue("已更新");
-  dashboard.getRange("O12").setFormula('=COUNTIFS($A$16:$A$80,"<>",$C$16:$C$80,"已更新")');
-  dashboard.getRange("P12").setValue(colors.green);
-  dashboard.getRange("Q12").setValue("已完成当天更新的成员");
-  dashboard.getRange("R12").setValue("正常");
-  dashboard.getRange("N13").setValue("待更新");
-  dashboard.getRange("O13").setFormula('=COUNTIFS($A$16:$A$80,"<>",$C$16:$C$80,"<>已更新")');
-  dashboard.getRange("P13").setValue(colors.amber);
-  dashboard.getRange("Q13").setValue("需要补充晨会内容");
-  dashboard.getRange("R13").setValue("关注");
-  dashboard.getRange("N14").setValue("阻塞");
-  dashboard.getRange("O14").setFormula('=COUNTIFS($F$16:$F$80,"<>",$A$16:$A$80,"<>")');
-  dashboard.getRange("P14").setValue(colors.red);
-  dashboard.getRange("Q14").setValue("需要当天处理");
-  dashboard.getRange("R14").setValue("高优先级");
-  dashboard.getRange("N15").setValue("风险");
-  dashboard.getRange("O15").setFormula('=COUNTIFS($G$16:$G$80,"<>",$A$16:$A$80,"<>")');
-  dashboard.getRange("P15").setValue(colors.amber);
-  dashboard.getRange("Q15").setValue("需要持续关注");
-  dashboard.getRange("R15").setValue("观察");
-  styleHeader(dashboard.getRange("N11:R11"), colors.header, colors.text);
-  dashboard.getRange("N11:R15").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
+  dashboard.getRange("M30:R34").setBackgroundColor("#F8FAFC").setVerticalAlignment("middle");
+  dashboard.getRange("M30:R30").setValues([["指标", "数值", "颜色", "说明", "状态", ""]]);
+  dashboard.getRange("M31").setValue("已更新");
+  dashboard.getRange("N31").setFormula('=COUNTIFS($A$11:$A$89,"<>",$C$11:$C$89,"已更新")');
+  dashboard.getRange("O31").setValue(colors.green);
+  dashboard.getRange("P31").setValue("已完成当天更新的成员");
+  dashboard.getRange("Q31").setValue("正常");
+  dashboard.getRange("M32").setValue("待更新");
+  dashboard.getRange("N32").setFormula('=COUNTIFS($A$11:$A$89,"<>",$C$11:$C$89,"<>已更新")');
+  dashboard.getRange("O32").setValue(colors.amber);
+  dashboard.getRange("P32").setValue("需要补充晨会内容");
+  dashboard.getRange("Q32").setValue("关注");
+  dashboard.getRange("M33").setValue("阻塞");
+  dashboard.getRange("N33").setFormula('=COUNTIFS($F$11:$F$89,"<>",$A$11:$A$89,"<>")');
+  dashboard.getRange("O33").setValue(colors.red);
+  dashboard.getRange("P33").setValue("需要当天处理");
+  dashboard.getRange("Q33").setValue("高优先级");
+  dashboard.getRange("M34").setValue("风险");
+  dashboard.getRange("N34").setFormula('=COUNTIFS($G$11:$G$89,"<>",$A$11:$A$89,"<>")');
+  dashboard.getRange("O34").setValue(colors.amber);
+  dashboard.getRange("P34").setValue("需要持续关注");
+  dashboard.getRange("Q34").setValue("观察");
+  styleHeader(dashboard.getRange("M30:R30"), colors.header, colors.text);
+  dashboard.getRange("M30:R34").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
 
-  dashboard.getRange("A15:K15").setValues([[
+  dashboard.getRange("A10:K10").setValues([[
     "成员ID",
     "成员",
     "更新状态",
@@ -301,24 +302,24 @@ async (providedUniverAPI) => {
     "最近更新时间",
     "预览状态",
   ]]);
-  styleHeader(dashboard.getRange("A15:K15"), colors.header, colors.text);
-  dashboard.getRange("A15:K15").setFontSize(10);
-  dashboard.getRange("A16:K80").setBackgroundColor(colors.panel);
-  dashboard.getRange("A15:K80").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
-  dashboard.getRange("A16:K80").setVerticalAlignment("top");
-  dashboard.getRange("D16:H80").setWrap(true).setVerticalAlignment("top");
-  dashboard.getRange("L16:L80").setValues(
-    Array.from({ length: 65 }, (_, index) => {
-      const row = index + 16;
+  styleHeader(dashboard.getRange("A10:K10"), colors.header, colors.text);
+  dashboard.getRange("A10:K10").setFontSize(10);
+  dashboard.getRange("A11:K89").setBackgroundColor(colors.panel);
+  dashboard.getRange("A10:K89").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
+  dashboard.getRange("A11:K89").setVerticalAlignment("top");
+  dashboard.getRange("D11:H89").setWrap(true).setVerticalAlignment("top");
+  dashboard.getRange("L11:L89").setValues(
+    Array.from({ length: 79 }, (_, index) => {
+      const row = index + 11;
       return [`=IFERROR(VALUE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(LEFT($J${row},19),"-",""),"T",""),":","")),"")`];
     })
   );
 
-  addTextRule(dashboard, "C16:C80", "已更新", colors.greenSoft, colors.green, true);
-  addTextRule(dashboard, "C16:C80", "待更新", colors.amberSoft, colors.amber, true);
-  addFormulaRule(dashboard, "F16:F80", "=LEN($F16)>0", colors.redSoft, colors.red, true);
-  addFormulaRule(dashboard, "G16:G80", "=LEN($G16)>0", colors.amberSoft, colors.amber, true);
-  addTextRule(dashboard, "K16:K80", "本地预览", colors.blueSoft, colors.blue, false);
+  addTextRule(dashboard, "C11:C89", "已更新", colors.greenSoft, colors.green, true);
+  addTextRule(dashboard, "C11:C89", "待更新", colors.amberSoft, colors.amber, true);
+  addFormulaRule(dashboard, "F11:F89", "=LEN($F11)>0", colors.redSoft, colors.red, true);
+  addFormulaRule(dashboard, "G11:G89", "=LEN($G11)>0", colors.amberSoft, colors.amber, true);
+  addTextRule(dashboard, "K11:K89", "本地预览", colors.blueSoft, colors.blue, false);
   dashboardConditionalFormatRules += 5;
 
   setWidths(dashboard, [130, 150, 130, 300, 320, 240, 240, 300, 210, 220, 160, 24, 110, 120, 90, 260, 140, 130]);
@@ -330,9 +331,9 @@ async (providedUniverAPI) => {
     [5, 38],
     [6, 24],
     [9, 30],
-    [14, 30],
+    [29, 30],
   ]);
-  dashboard.setRowHeights(15, 65, 58);
+  dashboard.setRowHeights(10, 79, 54);
 
   const people = sheets["People"];
   clearTemplateRange(people, "People", "A1:J80");
@@ -468,10 +469,10 @@ async (providedUniverAPI) => {
     const chartInfo = dashboard
       .newChart()
       .setChartType(api.Enum.ChartType.Column)
-      .addRange("N11:O15")
-      .setPosition(10, 0, 0, 0)
-      .setWidth(720)
-      .setHeight(220)
+      .addRange("M30:N34")
+      .setPosition(10, 12, 0, 0)
+      .setWidth(640)
+      .setHeight(250)
       .setOptions("title.content", "更新分布")
       .build();
     const chart = await dashboard.insertChart(chartInfo);
@@ -500,8 +501,8 @@ async (providedUniverAPI) => {
     createdSheets,
     deletedSheets,
     clearedRanges,
-    dashboardRange: "Dashboard!A1:R20",
-    chartSourceRange: "Dashboard!N11:R15",
+    dashboardRange: "Dashboard!A1:R34",
+    chartSourceRange: "Dashboard!M30:R34",
     personalLogRange: "log__sample_member!A1:Z1",
     dashboardConditionalFormatRules,
     peopleConditionalFormatRules,
