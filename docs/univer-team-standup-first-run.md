@@ -2,6 +2,8 @@
 
 This guide explains how a member starts using `univer-team-standup` while keeping local preview separate from shared visibility.
 
+`univer-team-standup` depends on the `univer-cli` skill for workbook operations. Make sure `univer` or `unv` is available before starting.
+
 ## Member: First Day
 
 1. Ask your agent to use `univer-team-standup` and run `onboard`.

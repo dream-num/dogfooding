@@ -7,6 +7,12 @@ description: Use when recording Univer team standup updates, onboarding teammate
 
 Operate the team standup workbook through `univer`/`unv` only. Treat workbook-visible state as the source of truth; never inspect, unzip, patch, or directly edit `.univer`/`.unv` internals.
 
+## Required Skills
+
+This is a workflow skill built on top of `univer-cli`. For workbook reads, writes, previews, synchronization, and verification, follow the `univer-cli` skill rules.
+
+If `univer-cli` skill instructions are unavailable, use `univer help` and `univer help <topic>` before running unfamiliar commands. Do not guess CLI syntax or bypass the CLI by editing `.univer`/`.unv` internals.
+
 ## Paths
 
 | Purpose | Path |

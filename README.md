@@ -18,10 +18,11 @@
 ## 快速开始
 
 1. 确认本地可使用 `univer` 或 `unv`。
-2. 阅读首次使用指南：[`docs/univer-team-standup-first-run.md`](docs/univer-team-standup-first-run.md)。
-3. 要求 agent 使用 `univer-team-standup`，并执行 `onboard`。
-4. 在确认候选行内容后，再追加当天晨会进展。
-5. 发布前先预览 workbook。
+2. 确认 agent 可使用 `univer-cli` skill；`univer-team-standup` 是建立在它之上的业务工作流。
+3. 阅读首次使用指南：[`docs/univer-team-standup-first-run.md`](docs/univer-team-standup-first-run.md)。
+4. 要求 agent 使用 `univer-team-standup`，并执行 `onboard`。
+5. 在确认候选行内容后，再追加当天晨会进展。
+6. 发布前先预览 workbook。
 
 默认流程只写本地并预览。其他成员不会看到你的 onboarding 或晨会更新，除非你明确要求 `commit`、`sync`，或团队已有其他发布流程。
 
