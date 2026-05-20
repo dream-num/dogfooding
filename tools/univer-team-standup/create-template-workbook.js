@@ -29,7 +29,8 @@ async (providedUniverAPI) => {
     { name: "Dashboard", rows: 90, cols: 23 },
     { name: "People", rows: 80, cols: 10 },
     { name: "Audit", rows: 200, cols: 10 },
-    { name: "log__sample_member", rows: 200, cols: 26 },
+    { name: "WorkItems", rows: 200, cols: 8 },
+    { name: "log__sample_member", rows: 200, cols: 18 },
   ];
 
   const legacyTemplateSheets = new Set(["_Dashboard", "_People", "_Reports", "_Audit", "log__sample_host"]);
@@ -142,7 +143,7 @@ async (providedUniverAPI) => {
   const logCell = (row, cellA1) => `INDIRECT($S${row}&"!${cellA1}")`;
 
   const logTimeNumberExpression = (row) =>
-    `IFERROR(VALUE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(LEFT(${logRange(row, "X")},19),"-",""),"T",""),":","")),0)`;
+    `IFERROR(VALUE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(LEFT(${logRange(row, "R")},19),"-",""),"T",""),":","")),0)`;
 
   const latestLogValueFormula = (row, columnLetter) =>
     `=IF($V${row}<>"有日志","",IF($U${row}="","",IFERROR(INDEX(${logRange(row, columnLetter)},$U${row})&"","")))`;
@@ -178,8 +179,8 @@ async (providedUniverAPI) => {
     addTextRule(sheet, "E2:E200", "待确认", colors.amberSoft, colors.amber, true);
     addTextRule(sheet, "F2:F200", "P0", colors.redSoft, colors.red, true);
     addTextRule(sheet, "F2:F200", "P1", colors.amberSoft, colors.amber, true);
-    addFormulaRule(sheet, "G2:G200", "=LEN($G2)>0", colors.redSoft, colors.red, true);
-    addFormulaRule(sheet, "H2:H200", "=LEN($H2)>0", colors.amberSoft, colors.amber, true);
+    addFormulaRule(sheet, "I2:I200", "=LEN($I2)>0", colors.redSoft, colors.red, true);
+    addFormulaRule(sheet, "J2:J200", "=LEN($J2)>0", colors.amberSoft, colors.amber, true);
     return 6;
   };
 
@@ -319,13 +320,13 @@ async (providedUniverAPI) => {
         `=IF(People!$I${peopleRow}="是",People!$A${peopleRow},"")`,
         `=IF($A${row}="","",IFERROR(INDEX(People!$B$2:$B$80,MATCH($A${row},People!$A$2:$A$80,0)),""))`,
         `=IF($A${row}="","",IF($V${row}="缺日志表","缺日志表",IF($V${row}="无日志","无日志",IF($J${row}="","待更新",IF(LEFT($J${row},10)=TEXT(TODAY(),"yyyy-mm-dd"),"已更新","待更新")))))`,
-        latestLogValueFormula(row, "P"),
-        latestLogValueFormula(row, "Q"),
         latestLogValueFormula(row, "G"),
         latestLogValueFormula(row, "H"),
         latestLogValueFormula(row, "I"),
+        latestLogValueFormula(row, "J"),
+        latestLogValueFormula(row, "K"),
         latestLogValueFormula(row, "A"),
-        latestLogValueFormula(row, "X"),
+        latestLogValueFormula(row, "R"),
         `=IF($A${row}="","",IF($V${row}="缺日志表","缺日志表",IF($V${row}="无日志","无日志",IF($J${row}="","缺创建时间",IF(LEFT($J${row},10)=TEXT(TODAY(),"yyyy-mm-dd"),"今日已同步","需要更新")))))`,
       ];
     })
@@ -425,6 +426,30 @@ async (providedUniverAPI) => {
   addTextRule(audit, "J2:J200", "失败", colors.redSoft, colors.red, true);
   auditConditionalFormatRules += 2;
 
+  const workItems = sheets["WorkItems"];
+  clearTemplateRange(workItems, "WorkItems", "A1:H200");
+  workItems.setHiddenGridlines(true);
+  workItems.setFrozenRows(1);
+  workItems.setFrozenColumns(2);
+  workItems.getRange("A1:H1").setValues([[
+    "关联项",
+    "工作项",
+    "默认优先级",
+    "默认仓库",
+    "负责人",
+    "状态",
+    "更新时间",
+    "备注",
+  ]]);
+  styleHeader(workItems.getRange("A1:H1"), "#EEF3F8", colors.text);
+  workItems.getRange("A1:H200").setBackgroundColor(colors.panel);
+  workItems.getRange("A1:H1").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, "#D7DEE8");
+  setWidths(workItems, [180, 320, 120, 220, 150, 140, 230, 360]);
+  addTextRule(workItems, "C2:C200", "P0", colors.redSoft, colors.red, true);
+  addTextRule(workItems, "C2:C200", "P1", colors.amberSoft, colors.amber, true);
+  addTextRule(workItems, "F2:F200", "进行中", colors.blueSoft, colors.blue, true);
+  addTextRule(workItems, "F2:F200", "已完成", colors.greenSoft, colors.green, true);
+
   const log = sheets["log__sample_member"];
   const logHeaders = [
     "日志ID",
@@ -433,26 +458,18 @@ async (providedUniverAPI) => {
     "工作项",
     "状态",
     "优先级",
+    "昨天完成",
+    "今天计划",
     "阻塞",
     "风险",
     "下一步",
     "仓库",
-    "分支",
     "关联项",
-    "分类",
-    "模块",
-    "规模",
-    "昨天完成",
-    "今天计划",
-    "影响",
     "证据",
     "来源",
-    "AgentID",
     "置信度",
-    "原始备注",
+    "去重键",
     "创建时间",
-    "校验时间",
-    "校验码",
   ];
   const logWidths = [
     230,
@@ -461,24 +478,16 @@ async (providedUniverAPI) => {
     280,
     120,
     100,
+    320,
+    320,
     240,
     260,
     260,
     220,
-    220,
-    170,
-    130,
-    150,
-    90,
-    320,
-    320,
-    260,
+    190,
     320,
     140,
-    230,
     120,
-    340,
-    230,
     230,
     280,
   ];
@@ -487,17 +496,17 @@ async (providedUniverAPI) => {
     sheet.setFrozenRows(1);
     sheet.setFrozenColumns(5);
     styleHeader(sheet.getRange("A1:I1"), "#DDEBFF");
-    styleHeader(sheet.getRange("J1:O1"), "#EEF3F8");
-    styleHeader(sheet.getRange("P1:S1"), "#EAF7EF");
-    styleHeader(sheet.getRange("T1:Z1"), "#F7F2E8");
+    styleHeader(sheet.getRange("J1:M1"), "#EEF3F8");
+    styleHeader(sheet.getRange("N1:O1"), "#EAF7EF");
+    styleHeader(sheet.getRange("P1:R1"), "#F7F2E8");
     setWidths(sheet, logWidths);
   };
-  clearTemplateRange(log, "log__sample_member", "A1:Z200");
-  log.getRange("A1:Z1").setValues([logHeaders]);
+  clearTemplateRange(log, "log__sample_member", "A1:R200");
+  log.getRange("A1:R1").setValues([logHeaders]);
   styleLogSheet(log);
   sampleLogConditionalFormatRules += addSampleLogConditionalFormatting(log);
-  log.getRange("A1:Z1").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, "#D7DEE8");
-  log.getRange("V2:V200").setNumberFormats(Array.from({ length: 199 }, () => ["0%"]));
+  log.getRange("A1:R1").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, "#D7DEE8");
+  log.getRange("P2:P200").setNumberFormats(Array.from({ length: 199 }, () => ["0%"]));
 
   await api.getFormula().onCalculationResultApplied();
 
@@ -545,7 +554,8 @@ async (providedUniverAPI) => {
     clearedRanges,
     dashboardRange: "Dashboard!A1:R39",
     chartSourceRange: "Dashboard!M30:R39",
-    personalLogRange: "log__sample_member!A1:Z1",
+    workItemsRange: "WorkItems!A1:H1",
+    personalLogRange: "log__sample_member!A1:R1",
     dashboardConditionalFormatRules,
     peopleConditionalFormatRules,
     auditConditionalFormatRules,

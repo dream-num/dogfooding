@@ -13,18 +13,45 @@
 
 | 项目 | 用途 | 关键资产 | 状态 |
 | --- | --- | --- | --- |
-| `univer-team-standup` | 团队晨会协作：成员通过自己的 agent 追加进展，主持人从共享 Univer workbook 读取当天状态并组织晨会。 | [`skills/univer-team-standup/SKILL.md`](skills/univer-team-standup/SKILL.md), [`ops/team-ops.univer`](ops/team-ops.univer), [`docs/univer-team-standup-first-run.md`](docs/univer-team-standup-first-run.md) | MVP 脚手架 |
+| `univer-worklog` | 团队工作日志：成员通过 agent 手动或自动汇总 Codex/workbuddy/git/GitHub 证据，写入共享 Univer workbook，并生成个人或团队日报/周报/月报。 | [`skills/univer-team-standup/SKILL.md`](skills/univer-team-standup/SKILL.md), [`skills/univer-worklog-auto/SKILL.md`](skills/univer-worklog-auto/SKILL.md), [`ops/team-ops.univer`](ops/team-ops.univer), [`docs/univer-team-standup-first-run.md`](docs/univer-team-standup-first-run.md) | Worklog MVP |
 
 ## 快速开始
 
-1. 确认本地可使用 `univer` 或 `unv`。
-2. 确认 agent 可使用 `univer-cli` skill；`univer-team-standup` 是建立在它之上的业务工作流。
+1. 安装唯一需要的 Univer 命令行工具：`npm install -g univer-cli@latest`，安装后应能使用 `univer` 或 `unv`。
+2. 安装唯一需要的 Univer skills 来源：`npx skills add dream-num/skills`，其中必须包含 `univer-cli` skill。
 3. 阅读首次使用指南：[`docs/univer-team-standup-first-run.md`](docs/univer-team-standup-first-run.md)。
-4. 要求 agent 使用 `univer-team-standup`，并执行 `onboard`。
-5. 在确认候选行内容后，再追加当天晨会进展。
-6. 发布前先预览 workbook。
+4. 在 Codex 里输入 `$univer-worklog-help` 查看可用入口。
+5. 首次使用先执行 `onboard`，确认自动生成的 `成员ID` 和个人日志表。
+6. 用 `$univer-worklog-append` 手动追加，或用 `$univer-worklog-auto --dry-run` 先预览自动采集结果。
+7. 发布前先预览 workbook。
 
-默认流程只写本地并预览。其他成员不会看到你的 onboarding 或晨会更新，除非你明确要求 `commit`、`sync`，或团队已有其他发布流程。
+默认流程只写本地并预览。其他成员不会看到你的 onboarding 或工作日志更新，除非你明确要求 `commit`、`sync`，或团队已有其他发布流程。
+
+`univer-worklog` 只依赖 `univer-cli` 工具链：不使用其他表格引擎，不直接编辑 `.univer` 包内部文件。
+
+## Worklog 命令
+
+这些是 Codex skill 入口，不是终端命令。输入 `$` 时应能看到独立 skill：
+
+```text
+$univer-worklog-append
+$univer-worklog-auto [--dry-run] [--confirm] [--no-submit] [--period day|week|month]
+$univer-worklog-report [day|week|month]
+$univer-worklog-report-team [day|week|month]
+$univer-worklog-help
+```
+
+`$univer-worklog-auto --dry-run` 只采集和生成候选，不写表格。默认 `$univer-worklog-auto` 写入后会在状态干净时自动提交/同步到团队远端；如需只本地预览，用 `--no-submit`。`$univer-worklog-report day` 和 `$univer-worklog-report-team day` 默认生成交互式 HTML 报告，包含总结、筛选、成员/项目卡片、展开明细、证据链接和打印友好的样式。
+
+默认团队远端由 skill 内置：
+
+```text
+unitID: fYmh0HRyTUO6YECQGFScnA0
+link: https://univer.ai/space/sheets/fYmh0HRyTUO6YECQGFScnA0
+host: https://univer.ai/
+```
+
+本地可用 `UNIVER_WORKLOG_REMOTE` / `UNIVER_WORKLOG_HOST` 或 `.univer-agent/profile.json` 覆盖。CLI 配置使用 base host，例如 `univer config set univerHost https://univer.ai/`；给用户看的访问链接使用 `/space/sheets/<unitID>` 格式。
 
 ## 协作约定
 
@@ -40,7 +67,8 @@
 
 | 路径 | 说明 |
 | --- | --- |
-| [`skills/univer-team-standup/`](skills/univer-team-standup/) | onboarding、追加晨会进展、发布 workbook 变更的 agent 协议。 |
+| [`skills/univer-team-standup/`](skills/univer-team-standup/) | worklog 核心协议：onboarding、append、auto、report、publish 规则。 |
+| [`skills/univer-worklog-*/`](skills/univer-worklog-auto/) | Codex `$` 可发现的 worklog 命令入口。 |
 | [`ops/team-ops.univer`](ops/team-ops.univer) | 晨会 workbook 模板和本地状态。 |
 | [`tools/univer-team-standup/`](tools/univer-team-standup/) | 创建和维护 workbook 模板的工具。 |
 | [`docs/univer-team-standup-first-run.md`](docs/univer-team-standup-first-run.md) | 成员首次使用指南。 |
