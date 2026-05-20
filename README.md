@@ -13,7 +13,16 @@
 
 | 项目 | 用途 | 关键资产 | 状态 |
 | --- | --- | --- | --- |
-| `univer-worklog` | 团队工作日志：成员通过 agent 手动或自动汇总 Codex/workbuddy/git/GitHub 证据，写入共享 Univer workbook，并生成个人或团队日报/周报/月报。 | [`skills/univer-team-standup/SKILL.md`](skills/univer-team-standup/SKILL.md), [`skills/univer-worklog-auto/SKILL.md`](skills/univer-worklog-auto/SKILL.md), [`ops/team-ops.univer`](ops/team-ops.univer), [`docs/univer-team-standup-first-run.md`](docs/univer-team-standup-first-run.md) | Worklog MVP |
+| `univer-worklog` | 团队工作日志：成员通过 agent 手动或自动汇总 Codex/workbuddy/git/GitHub 证据，写入共享 Univer workbook，并生成个人或团队日报/周报/月报。 | [`skills/univer-worklog-auto/SKILL.md`](skills/univer-worklog-auto/SKILL.md), [`skills/univer-worklog-report-team/SKILL.md`](skills/univer-worklog-report-team/SKILL.md), [`skills/univer-team-standup/SKILL.md`](skills/univer-team-standup/SKILL.md), [`ops/team-ops.univer`](ops/team-ops.univer), [`docs/univer-team-standup-first-run.md`](docs/univer-team-standup-first-run.md) | Worklog MVP |
+
+## 当前状态
+
+- 面向用户的 Codex skill 入口已经拆成 5 个：`univer-worklog-append`、`univer-worklog-auto`、`univer-worklog-report`、`univer-worklog-report-team`、`univer-worklog-help`。
+- `univer-team-standup` 是内部 core skill，只保存 workbook 协议、表结构、同步策略和报告规则，不应该作为 `$` 菜单入口直接使用。
+- 唯一依赖是 `univer-cli` 工具链：`univer` / `unv` 命令和来自 [`dream-num/skills`](https://github.com/dream-num/skills) 的 `univer-cli` skill。
+- 默认共享 workbook 已内置为 [`fYmh0HRyTUO6YECQGFScnA0`](https://univer.ai/space/sheets/fYmh0HRyTUO6YECQGFScnA0)，CLI host 使用 `https://univer.ai/`。
+- 个人报告和团队报告默认生成交互式 HTML；团队报告按 10-15 人晨会设计，首屏优先展示团队摘要、同步/决策/求助和成员 compact cards，明细默认折叠。
+- `$univer-worklog-auto` 的目标是自动采集、去重、写入并在状态干净时提交/同步；`append` 和 `report` 默认不发布远端，除非用户明确要求。
 
 ## 快速开始
 
@@ -41,6 +50,14 @@ $univer-worklog-report-team [day|week|month]
 $univer-worklog-help
 ```
 
+| 命令 | 用途 | 默认写入/同步行为 |
+| --- | --- | --- |
+| `$univer-worklog-append` | 手动追加自己的工作日志 | 写本地，明确要求时再发布 |
+| `$univer-worklog-auto` | 从 Codex/workbuddy/git/GitHub 证据生成候选，去重后写入 | 默认可自动提交/同步；`--dry-run` 不写，`--no-submit` 不同步 |
+| `$univer-worklog-report` | 生成个人日报/周报/月报 | 只生成本地 HTML 报告 |
+| `$univer-worklog-report-team` | 生成团队日报/周报/月报 | 只生成本地 HTML 报告 |
+| `$univer-worklog-help` | 查看命令和常用自然语言别名 | 只读 |
+
 `$univer-worklog-auto --dry-run` 只采集和生成候选，不写表格。默认 `$univer-worklog-auto` 写入后会在状态干净时自动提交/同步到团队远端；如需只本地预览，用 `--no-submit`。`$univer-worklog-report day` 和 `$univer-worklog-report-team day` 默认生成交互式 HTML 报告，包含总结、筛选、成员/项目卡片、展开明细、证据链接和打印友好的样式。
 
 默认团队远端由 skill 内置：
@@ -67,8 +84,12 @@ host: https://univer.ai/
 
 | 路径 | 说明 |
 | --- | --- |
-| [`skills/univer-team-standup/`](skills/univer-team-standup/) | worklog 核心协议：onboarding、append、auto、report、publish 规则。 |
-| [`skills/univer-worklog-*/`](skills/univer-worklog-auto/) | Codex `$` 可发现的 worklog 命令入口。 |
+| [`skills/univer-team-standup/`](skills/univer-team-standup/) | 内部 core skill：workbook 协议、onboarding、append、auto、report、publish 规则；不直接作为 `$` 入口。 |
+| [`skills/univer-worklog-append/`](skills/univer-worklog-append/) | 手动追加自己的 worklog。 |
+| [`skills/univer-worklog-auto/`](skills/univer-worklog-auto/) | 自动采集证据、生成候选、去重、写入并可自动提交。 |
+| [`skills/univer-worklog-report/`](skills/univer-worklog-report/) | 生成个人 HTML 日报/周报/月报。 |
+| [`skills/univer-worklog-report-team/`](skills/univer-worklog-report-team/) | 生成适合晨会扫描的团队 HTML 日报/周报/月报。 |
+| [`skills/univer-worklog-help/`](skills/univer-worklog-help/) | 输出命令列表、别名和默认 workbook 信息。 |
 | [`ops/team-ops.univer`](ops/team-ops.univer) | 晨会 workbook 模板和本地状态。 |
 | [`tools/univer-team-standup/`](tools/univer-team-standup/) | 创建和维护 workbook 模板的工具。 |
 | [`docs/univer-team-standup-first-run.md`](docs/univer-team-standup-first-run.md) | 成员首次使用指南。 |
