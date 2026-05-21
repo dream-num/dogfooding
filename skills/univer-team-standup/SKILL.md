@@ -287,6 +287,45 @@ Determine `优先级` in this order:
 
 Do not ask users to fill priority every time. Ask only when the priority changes the report meaning and no evidence can decide it.
 
+## Report Date Resolution
+
+Personal and team report workflows must resolve both `period` and `date anchor` before reading logs.
+
+Supported explicit forms:
+
+```text
+univer-worklog-report --period day --date 2026-05-21
+univer-worklog-report --period week --date 2026-05-21
+univer-worklog-report --period month --date 2026-05
+univer-worklog-report-team --period day --date yesterday
+univer-worklog-report-team --period week --date last-week
+univer-worklog-report-team --period month --date this-month
+```
+
+Supported natural-language aliases:
+
+| User wording | Equivalent |
+| --- | --- |
+| `today`, `今天`, no date for day reports | `--period day --date <today>` |
+| `yesterday`, `昨天` | `--period day --date <yesterday>` |
+| `this-week`, `本周` | `--period week --date <today>` |
+| `last-week`, `上周` | `--period week --date <date in previous week>` |
+| `this-month`, `本月` | `--period month --date <current YYYY-MM>` |
+| `last-month`, `上月` | `--period month --date <previous YYYY-MM>` |
+
+Date resolution rules:
+
+- Resolve relative dates in `profile.timezone`; default to `Asia/Shanghai` when profile timezone is missing.
+- `--period day --date <YYYY-MM-DD>` covers that natural day.
+- `--period week --date <YYYY-MM-DD|relative>` covers Monday through Sunday for the week containing the resolved date.
+- `--period month --date <YYYY-MM|YYYY-MM-DD|relative>` covers the whole natural month.
+- If the user provides only `day`, `week`, or `month`, use today as the anchor in profile timezone.
+- If the user says `今天`, `昨天`, `本周`, `上周`, `本月`, or `上月` without flags, infer both `period` and `date` from the alias.
+- Filter report rows by the Personal Log `日期` field, not by `创建时间`, file modification time, sync time, or current conversation time.
+- Accept spreadsheet serial dates and ISO/date-like display values, but normalize them to local `YYYY-MM-DD` before filtering.
+- Report titles, filenames, and summaries must show the resolved absolute date range, for example `2026-05-20`, `2026-05-18 to 2026-05-24`, or `2026-05`.
+- If parsing is ambiguous, state the assumed absolute range before generating the report.
+
 ## Workflow: Onboard
 
 1. Check `univer` or `unv`.
@@ -369,7 +408,9 @@ Auto row writing:
 
 ## Workflow: Personal Report
 
-Use for `univer-worklog-report [day|week|month]` or `--period day|week|month`. Default period is `day`.
+Use for `univer-worklog-report [day|week|month]`, natural-language date aliases such as `今天`, `昨天`, `本周`, `上周`, `本月`, `上月`, or `--period day|week|month --date <anchor>`. Default period is `day` with today's date anchor.
+
+Before reading rows, resolve the exact date range according to Report Date Resolution.
 
 Read only the current user's `log__<owner_id>` plus `People` and `WorkItems`. Generate a self-contained AI-written HTML report under the matching report directory. Use Markdown only when the user explicitly asks for Markdown.
 
@@ -391,7 +432,9 @@ Weekly and monthly HTML reports must add a trend section: repeated themes, shipp
 
 ## Workflow: Team Report
 
-Use for `univer-worklog-report-team [day|week|month]` or `--period day|week|month`. Default period is `day`.
+Use for `univer-worklog-report-team [day|week|month]`, natural-language date aliases such as `今天`, `昨天`, `本周`, `上周`, `本月`, `上月`, or `--period day|week|month --date <anchor>`. Default period is `day` with today's date anchor.
+
+Before reading rows, resolve the exact date range according to Report Date Resolution.
 
 Read team logs from both the member registry and the workbook's actual log sheets. `People` is the roster, but it is not the only evidence source; any non-sample personal log sheet with period rows must be included in the report even when the member is missing from `People`.
 
