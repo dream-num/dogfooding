@@ -413,6 +413,15 @@ Generate a self-contained AI-written HTML report under the matching report direc
 
 If the report period overlaps the Business Goal Tracking window, load the business goals reference and include a business-goal tracking section before standup focus. This section must be AI-written from worklog evidence, not a static copy of the OKR table.
 
+Team report presentation order:
+
+1. Team summary and update coverage.
+2. Business goal tracking, when applicable.
+3. `重大进展同步`: 3-7 team-level progress items worth saying out loud in the meeting. Prefer shipped outcomes, benchmark/goal movement, unblocked cross-team work, customer/user-visible changes, and important decisions. Merge duplicates across people, cite the key owner(s), and avoid routine task narration.
+4. `每人晨会要点`: one compact row or list item per active or log-only contributor, optimized for a quick verbal round. Each person should have status, 1 highlight, 1 next action, and blocker/risk/help signal. Keep it to 1-2 short lines per person; detailed rows come later.
+5. Standup focus: sync, decision, and help-needed items.
+6. Compact member cards and collapsed detail rows for after-meeting follow-up.
+
 Team report output:
 
 - file: `ops/reports/<daily|weekly|monthly>/<period>-team.html`
@@ -421,6 +430,8 @@ Team report output:
 - coverage accounting: show registered active members, registered updated members, unregistered log-only contributors, and missing registered members separately
 - business goal tracking: for overlapping periods, show one compact card per objective O1-O4 with status, strongest recent evidence, likely KR coverage, missing acceptance proof, and risk/warning badges
 - business goal risk list: show the top 3 cross-team warnings, such as P0 objective with no evidence, owner gap, blocked KR, acceptance gap, repeated stale next step, or high-priority unmapped work
+- major progress sync: a visually prominent but compact `重大进展同步` section before standup focus, with at most 7 items grouped by goal/project/repo and owner badges
+- per-person standup points: a `每人晨会要点` table or dense list before personal details, with columns such as member, status, highlight, next action, and help/risk; this is the meeting script, not the raw detail log
 - default density: optimized for a 10-15 person team; the first viewport must be readable in a morning meeting without scrolling through every detail
 - opening summary: 3-5 short sentences or bullets, no raw row-by-row narration
 - standup focus: three columns for sync, decision, and help-needed items; show at most 5 items per column, sorted by P0/P1, blocked/risk, then recency
@@ -430,7 +441,7 @@ Team report output:
 - visual style: morning-standup dashboard, scannable on projector, restrained operational UI, no decorative gradient/orb background
 - accessibility: semantic headings, keyboard-friendly controls, readable contrast, responsive layout
 
-Team reports must include both the team-level summary and each person's section. The default reading path is: team summary -> standup focus -> compact member cards. The detailed list is for after-meeting follow-up and must not dominate the main view.
+Team reports must include the team-level summary, major progress sync, per-person standup points, and each person's section. The default reading path is: team summary -> business goals when applicable -> major progress sync -> per-person standup points -> standup focus -> compact member cards. The detailed list is for after-meeting follow-up and must not dominate the main view.
 
 ## Workflow: Help
 
