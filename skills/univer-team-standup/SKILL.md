@@ -78,6 +78,7 @@ If install fails, show the exact failing command and continue only with operatio
 | daily reports | `ops/reports/daily/` |
 | weekly reports | `ops/reports/weekly/` |
 | monthly reports | `ops/reports/monthly/` |
+| business goals reference | `skills/univer-team-standup/references/business-goals-2026-05-21-2026-06-18.md` |
 
 Never commit `.univer-agent/` files.
 
@@ -131,6 +132,26 @@ Normalize remote values before running CLI commands:
 Do not use guessed query URLs such as `?unit=<id>&type=2` for success links. Use the `/space/sheets/<unitID>` URL format above.
 
 Do not print access-sensitive remote values in long logs. It is OK to show a short masked form such as `fYmh...cnA0`.
+
+## Business Goal Tracking
+
+For report periods overlapping 2026-05-21 through 2026-06-18, load `references/business-goals-2026-05-21-2026-06-18.md` and track worklog evidence against the embedded Univer CLI next-stage OKR.
+
+Source goal workbook:
+
+```text
+https://univer.ai/space/sheets/iqf9frj6SACbbXMc06gZ8A3
+```
+
+Goal tracking applies to both personal and team reports. It should make the report better at remembering the business context over time:
+
+- map worklog rows to O1 SpreadsheetBench, O2 Agent Builder, O3 Code as Spreadsheet, and O4 SDK-to-CLI/foundation delivery when evidence supports it
+- distinguish strong, medium, and weak evidence; do not force a goal mapping when the evidence is vague
+- call out missing evidence, owner gaps, blockers, risks, cadence risks, acceptance gaps, repeated stale next steps, and high-priority unmapped work
+- do not invent progress percentages; use qualitative status unless a row contains measured proof such as ranking, coverage, migration rate, MVP closure, capability matrix completion, regression results, or formula Rust benchmark data proving 10x+ performance improvement
+- keep the section concise enough for morning standup, with deeper details collapsed in HTML reports
+
+When append or auto flows create rows during this goal window, prefer goal-aware `关联项` or `WorkItems` hints when the evidence clearly matches a goal, for example `O2-KR1-worklog-dogfood`, `O4-KR1-sdk-cli-matrix`, `O4-KR3-formula-rust`, `O4-KR4-docs-export`, or `O4-KR5-slide-mvp`. If uncertain, leave the row unmapped and let the report show it as possible focus drift rather than writing misleading metadata.
 
 ## Route Intent
 
@@ -352,18 +373,21 @@ Use for `univer-worklog-report [day|week|month]` or `--period day|week|month`. D
 
 Read only the current user's `log__<owner_id>` plus `People` and `WorkItems`. Generate a self-contained AI-written HTML report under the matching report directory. Use Markdown only when the user explicitly asks for Markdown.
 
+If the report period overlaps the Business Goal Tracking window, load the business goals reference and include goal-aware analysis from the current user's rows. Do not show every objective by default; show touched objectives plus warnings where the user's missing or unmapped work creates risk.
+
 Personal report output:
 
 - file: `ops/reports/<daily|weekly|monthly>/<period>-<owner_id>.html`
 - format: standalone HTML with inline CSS and minimal inline JS; no external network assets
 - opening view: executive header with member name, period, generated time, team workbook link, and 3-5 sentence AI-written summary
 - top metrics: total rows, completed, in progress, blocked, risk count, P0/P1 count
+- business goal contribution: for overlapping periods, a compact `业务目标贡献` section after top metrics with touched O1-O4 objectives, evidence strength, next checkpoint, and relevant warnings
 - main body: visual project cards grouped by repo/work item, with status and priority chips, progress narrative, next action, blockers/risks, and compact evidence links
 - interactions: filter chips for status/priority/repo, collapsible evidence/details sections, copy-summary button, and print-friendly styling
 - visual style: calm operational dashboard, dense but readable, 8px-or-less card radius, not a marketing landing page, no decorative gradient/orb background
 - accessibility: semantic headings, keyboard-friendly buttons, readable contrast, responsive layout
 
-Weekly and monthly HTML reports must add a trend section: repeated themes, shipped work, lingering risks, and suggested next focus.
+Weekly and monthly HTML reports must add a trend section: repeated themes, shipped work, lingering risks, suggested next focus, and whether the member's evidence is converging on or drifting from the business goals.
 
 ## Workflow: Team Report
 
@@ -387,12 +411,16 @@ Team report read order:
 
 Generate a self-contained AI-written HTML report under the matching report directory. Use Markdown only when the user explicitly asks for Markdown.
 
+If the report period overlaps the Business Goal Tracking window, load the business goals reference and include a business-goal tracking section before standup focus. This section must be AI-written from worklog evidence, not a static copy of the OKR table.
+
 Team report output:
 
 - file: `ops/reports/<daily|weekly|monthly>/<period>-team.html`
 - format: standalone HTML with inline CSS and minimal inline JS; no external network assets
 - opening view: team-level summary with date/period, generated time, workbook link, update coverage, and key delivery/risk narrative
 - coverage accounting: show registered active members, registered updated members, unregistered log-only contributors, and missing registered members separately
+- business goal tracking: for overlapping periods, show one compact card per objective O1-O4 with status, strongest recent evidence, likely KR coverage, missing acceptance proof, and risk/warning badges
+- business goal risk list: show the top 3 cross-team warnings, such as P0 objective with no evidence, owner gap, blocked KR, acceptance gap, repeated stale next step, or high-priority unmapped work
 - default density: optimized for a 10-15 person team; the first viewport must be readable in a morning meeting without scrolling through every detail
 - opening summary: 3-5 short sentences or bullets, no raw row-by-row narration
 - standup focus: three columns for sync, decision, and help-needed items; show at most 5 items per column, sorted by P0/P1, blocked/risk, then recency
@@ -429,6 +457,12 @@ Also mention the default team workbook:
 
 ```text
 https://univer.ai/space/sheets/fYmh0HRyTUO6YECQGFScnA0
+```
+
+Also mention that reports covering 2026-05-21 through 2026-06-18 include Univer CLI next-stage OKR tracking from:
+
+```text
+https://univer.ai/space/sheets/iqf9frj6SACbbXMc06gZ8A3
 ```
 
 ## Workflow: Publish

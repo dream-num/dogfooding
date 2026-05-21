@@ -7,4 +7,4 @@ description: Use when the user wants an AI-written interactive HTML personal wor
 
 Use the core protocol in `../univer-team-standup/SKILL.md`, route intent `personal report`.
 
-Default period is `day`. Generate the report from the current user's personal log plus `People` and `WorkItems`, using the HTML-first personal report format defined in the core protocol. Produce `.html` by default; use Markdown only if the user explicitly requests it.
+Default period is `day`. Generate the report from the current user's personal log plus `People` and `WorkItems`, using the HTML-first personal report format defined in the core protocol. For periods overlapping 2026-05-21 through 2026-06-18, include the business-goal contribution and risk/warning tracking from the core protocol. Produce `.html` by default; use Markdown only if the user explicitly requests it.
