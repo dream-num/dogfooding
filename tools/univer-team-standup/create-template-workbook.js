@@ -143,10 +143,13 @@ async (providedUniverAPI) => {
   const logCell = (row, cellA1) => `INDIRECT($S${row}&"!${cellA1}")`;
 
   const logTimeNumberExpression = (row) =>
-    `IFERROR(VALUE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(LEFT(${logRange(row, "R")},19),"-",""),"T",""),":","")),0)`;
+    `IF(IFERROR(${logCell(row, "R1")},"")="创建时间",IFERROR(VALUE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(LEFT(${logRange(row, "R")},19),"-",""),"T",""),":","")),0),IF(IFERROR(${logCell(row, "X1")},"")="创建时间",IFERROR(VALUE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(LEFT(${logRange(row, "X")},19),"-",""),"T",""),":","")),0),0))`;
 
-  const latestLogValueFormula = (row, columnLetter) =>
-    `=IF($V${row}<>"有日志","",IF($U${row}="","",IFERROR(INDEX(${logRange(row, columnLetter)},$U${row})&"","")))`;
+  const latestLogValueFormula = (row, standardColumnLetter, extendedColumnLetter = standardColumnLetter) =>
+    `=IF($V${row}<>"有日志","",IF($U${row}="","",IF(IFERROR(${logCell(row, "R1")},"")="创建时间",IFERROR(INDIRECT($S${row}&"!${standardColumnLetter}"&($U${row}+1)),""),IF(IFERROR(${logCell(row, "X1")},"")="创建时间",IFERROR(INDIRECT($S${row}&"!${extendedColumnLetter}"&($U${row}+1)),""),""))))`;
+
+  const personalSheetFormula = (row) =>
+    `=IF($A${row}="","",IFERROR(IF(INDEX(People!$E$2:$E$80,MATCH($A${row},People!$A$2:$A$80,0))<>"",INDEX(People!$E$2:$E$80,MATCH($A${row},People!$A$2:$A$80,0)),"log__"&$A${row}),"log__"&$A${row}))`;
 
   const addTextRule = (sheet, rangeA1, text, background, fontColor, bold = false) => {
     const range = sheet.getRange(rangeA1);
@@ -312,38 +315,44 @@ async (providedUniverAPI) => {
   dashboard.getRange("A10:K89").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, colors.grid);
   dashboard.getRange("A11:K89").setVerticalAlignment("top");
   dashboard.getRange("D11:H89").setWrap(true).setVerticalAlignment("top");
-  dashboard.getRange("A11:K89").setValues(
-    Array.from({ length: 79 }, (_, index) => {
-      const row = index + 11;
-      const peopleRow = index + 2;
-      return [
-        `=IF(People!$I${peopleRow}="是",People!$A${peopleRow},"")`,
-        `=IF($A${row}="","",IFERROR(INDEX(People!$B$2:$B$80,MATCH($A${row},People!$A$2:$A$80,0)),""))`,
-        `=IF($A${row}="","",IF($V${row}="缺日志表","缺日志表",IF($V${row}="无日志","无日志",IF($J${row}="","待更新",IF(LEFT($J${row},10)=TEXT(TODAY(),"yyyy-mm-dd"),"已更新","待更新")))))`,
-        latestLogValueFormula(row, "G"),
-        latestLogValueFormula(row, "H"),
-        latestLogValueFormula(row, "I"),
-        latestLogValueFormula(row, "J"),
-        latestLogValueFormula(row, "K"),
-        latestLogValueFormula(row, "A"),
-        latestLogValueFormula(row, "R"),
-        `=IF($A${row}="","",IF($V${row}="缺日志表","缺日志表",IF($V${row}="无日志","无日志",IF($J${row}="","缺创建时间",IF(LEFT($J${row},10)=TEXT(TODAY(),"yyyy-mm-dd"),"今日已同步","需要更新")))))`,
-      ];
-    })
-  );
-  dashboard.getRange("S11:W89").setValues(
-    Array.from({ length: 79 }, (_, index) => {
-      const row = index + 11;
-      const timeNumbers = logTimeNumberExpression(row);
-      return [
-        `=IF($A${row}="","","log__"&$A${row})`,
-        `=IF($A${row}="","",IF($V${row}<>"有日志","",IFERROR(MAX(${timeNumbers}),"")))`,
-        `=IF($T${row}="","",IFERROR(MATCH($T${row},${timeNumbers},0),""))`,
-        `=IF($A${row}="","",IF(IFERROR(${logCell(row, "A1")},"")<>"日志ID","缺日志表",IF(COUNTA(${logRange(row, "A")})=0,"无日志","有日志")))`,
-        `=IF($A${row}="","",IF($V${row}<>"有日志",$V${row},IF($J${row}="","缺创建时间","数据正常")))`,
-      ];
-    })
-  );
+  for (let index = 0; index < 79; index += 1) {
+    const row = index + 11;
+    const peopleRow = index + 2;
+    const timeNumbers = logTimeNumberExpression(row);
+
+    dashboard.getRange(`A${row}:B${row}`).setValues([[
+      `=IF(People!$I${peopleRow}="是",People!$A${peopleRow},"")`,
+      `=IF($A${row}="","",IFERROR(INDEX(People!$B$2:$B$80,MATCH($A${row},People!$A$2:$A$80,0)),""))`,
+    ]]);
+    dashboard.getRange(`S${row}`).setValues([[personalSheetFormula(row)]]);
+    dashboard.getRange(`V${row}`).setValues([[
+      `=IF($A${row}="","",IF(IFERROR(${logCell(row, "A1")},"")<>"日志ID","缺日志表",IF(COUNTA(${logRange(row, "A")})=0,"无日志","有日志")))`,
+    ]]);
+    dashboard.getRange(`T${row}`).setValues([[
+      `=IF($A${row}="","",IF($V${row}<>"有日志","",IFERROR(MAX(${timeNumbers}),"")))`,
+    ]]);
+    dashboard.getRange(`U${row}`).setValues([[
+      `=IF($T${row}="","",IFERROR(MATCH($T${row},${timeNumbers},0),""))`,
+    ]]);
+    dashboard.getRange(`D${row}:J${row}`).setValues([[
+      latestLogValueFormula(row, "G", "P"),
+      latestLogValueFormula(row, "H", "Q"),
+      latestLogValueFormula(row, "I", "G"),
+      latestLogValueFormula(row, "J", "H"),
+      latestLogValueFormula(row, "K", "I"),
+      latestLogValueFormula(row, "A"),
+      latestLogValueFormula(row, "R", "X"),
+    ]]);
+    dashboard.getRange(`C${row}`).setValues([[
+      `=IF($A${row}="","",IF($V${row}="缺日志表","缺日志表",IF($V${row}="无日志","无日志",IF($J${row}="","待更新",IF(LEFT($J${row},10)=TEXT(TODAY(),"yyyy-mm-dd"),"已更新","待更新")))))`,
+    ]]);
+    dashboard.getRange(`K${row}`).setValues([[
+      `=IF($A${row}="","",IF($V${row}="缺日志表","缺日志表",IF($V${row}="无日志","无日志",IF($J${row}="","缺创建时间",IF(LEFT($J${row},10)=TEXT(TODAY(),"yyyy-mm-dd"),"今日已同步","需要更新")))))`,
+    ]]);
+    dashboard.getRange(`W${row}`).setValues([[
+      `=IF($A${row}="","",IF($V${row}<>"有日志",$V${row},IF($J${row}="","缺创建时间","数据正常")))`,
+    ]]);
+  }
 
   addTextRule(dashboard, "C11:C89", "已更新", colors.greenSoft, colors.green, true);
   addTextRule(dashboard, "C11:C89", "待更新", colors.amberSoft, colors.amber, true);
