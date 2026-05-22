@@ -515,6 +515,7 @@ async (providedUniverAPI) => {
   styleLogSheet(log);
   sampleLogConditionalFormatRules += addSampleLogConditionalFormatting(log);
   log.getRange("A1:R1").setBorder(api.Enum.BorderType.ALL, api.Enum.BorderStyleTypes.THIN, "#D7DEE8");
+  log.getRange("B2:B200").setNumberFormats(Array.from({ length: 199 }, () => ["yyyy-mm-dd"]));
   log.getRange("P2:P200").setNumberFormats(Array.from({ length: 199 }, () => ["0%"]));
 
   await api.getFormula().onCalculationResultApplied();
