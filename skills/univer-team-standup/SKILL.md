@@ -503,6 +503,17 @@ Generate a self-contained AI-written HTML report under the matching report direc
 
 If the report period overlaps the Business Goal Tracking window, load the business goals reference and include `业务目标追踪 — OKR 进度` as the first sub-section inside `晨会聚焦`. This section must be AI-written from worklog evidence, not a static copy of the OKR table. Do not create a separate generic `业务目标概览` block.
 
+PMO OKR focus requirements:
+
+- Priority: treat this as P1 presentation-layer behavior for team reports. Do not change data collection, workbook schema, storage, append, or auto write logic for this requirement.
+- Replace, do not duplicate: remove `晨会聚焦 -> 业务目标概览`; promote the former standalone `业务目标追踪` card area into `晨会聚焦` as `业务目标追踪 — OKR 进度`.
+- `晨会聚焦` must contain these four sub-sections in order: `业务目标追踪 — OKR 进度`, `重大进展同步`, `重要风险点`, `需沟通事项`.
+- `业务目标追踪 — OKR 进度` must keep the compact one-card-per-objective layout for O1-O4 and show progress percentage, status (`正常`/`滞后`/`风险`), "到了哪里", and "还差什么".
+- `重大进展同步` must be visually clustered by objective so the reader can quickly answer "O3 今天有哪些产出" and "O4 今天推进了什么".
+- Use exactly these progress group headings, in order: `O1 SpreadsheetBench`, `O2 Agent Builder`, `O3 Code as Spreadsheet`, `O4 SDK→CLI`, `基建 & 其他`.
+- Omit objective groups with no progress for the selected period; do not render empty placeholder sections.
+- Within one objective group, preserve the existing item ordering rule: delivered/shipped outcomes first, then in-progress items, then weaker signals. Avoid repeating the project name on every item when the group heading already provides the context.
+
 Team report presentation order:
 
 1. Team summary and update coverage.
