@@ -501,18 +501,18 @@ Team report read order:
 
 Generate a self-contained AI-written HTML report under the matching report directory. Use Markdown only when the user explicitly asks for Markdown.
 
-If the report period overlaps the Business Goal Tracking window, load the business goals reference and include a business-goal tracking section before standup focus. This section must be AI-written from worklog evidence, not a static copy of the OKR table.
+If the report period overlaps the Business Goal Tracking window, load the business goals reference and include `业务目标追踪 — OKR 进度` as the first sub-section inside `晨会聚焦`. This section must be AI-written from worklog evidence, not a static copy of the OKR table. Do not create a separate generic `业务目标概览` block.
 
 Team report presentation order:
 
 1. Team summary and update coverage.
-2. `晨会聚焦`: the meeting-first block. It must contain only business goal overview, major progress, important risks, and communication items. A host should be able to run the morning meeting from this block alone.
-3. `业务目标追踪`: one compact card per O1-O4. Each card shows evidence-based overall progress percentage, progress status, risk status, and "到了哪里 / 还差什么". Keep progress and risks visually separate, such as left/right columns or stacked progress/risk areas. Do not expand raw evidence in this block.
-4. `重大进展同步`: an independent section listing meeting-worthy progress. Group by objective/project such as O1/O2/O3/O4/基建; merge duplicate rows under the same project. Prefer shipped outcomes, benchmark/goal movement, unblocked cross-team work, customer/user-visible changes, and important decisions.
-5. `重要风险点`: an independent section separate from progress. List O1-O4 goal risks first, then other project/team/infrastructure risks. Group by project/category, show owner when known, and mark severity as `P0/P1` or `高/中/低`.
-6. `需沟通事项`: an independent section for alignment topics in today's standup. Each item must name responsible owner(s), for example `@name`, and state the question or decision needed.
-7. `每人晨会要点`: one compact row or list item per active or log-only contributor, optimized for a quick verbal round. Each person should have status, 1 highlight, 1 next action, and blocker/risk/help signal. Keep it to 1-2 short lines per person; detailed rows come later.
-8. Member detail cards and collapsed row details for after-meeting follow-up.
+2. `晨会聚焦`: the meeting-first block. It must contain only `业务目标追踪 — OKR 进度`, `重大进展同步`, `重要风险点`, and `需沟通事项`. A host should be able to run the morning meeting from this block alone.
+3. Inside `晨会聚焦`, render `业务目标追踪 — OKR 进度` first. Use one compact card per O1-O4 with evidence-based progress percentage, status (`正常`/`滞后`/`风险`), and "到了哪里 / 还差什么". Keep progress and risks visually separate, such as left/right columns or stacked progress/risk areas. Do not expand raw evidence in this block. Do not also render a separate `业务目标概览`.
+4. Inside `晨会聚焦`, render `重大进展同步` as meeting-worthy progress grouped strictly by business objective in this order: `O1 SpreadsheetBench`, `O2 Agent Builder`, `O3 Code as Spreadsheet`, `O4 SDK→CLI`, `基建 & 其他`. Omit empty groups. Within each group, place delivered outcomes before in-progress items, merge duplicate rows, and do not repeat the project name on every item when the group title already names the objective.
+5. Inside `晨会聚焦`, render `重要风险点` as an independent section separate from progress. List O1-O4 goal risks first, then other project/team/infrastructure risks. Group by project/category, show owner when known, and mark severity as `P0/P1` or `高/中/低`.
+6. Inside `晨会聚焦`, render `需沟通事项` as an independent section for alignment topics in today's standup. Each item must name responsible owner(s), for example `@name`, and state the question or decision needed.
+7. After `晨会聚焦`, render `每人晨会要点`: one compact row or list item per active or log-only contributor, optimized for a quick verbal round. Each person should have status, 1 highlight, 1 next action, and blocker/risk/help signal. Keep it to 1-2 short lines per person; detailed rows come later.
+8. Then render member detail cards and collapsed row details for after-meeting follow-up.
 
 Team report output:
 
@@ -520,9 +520,9 @@ Team report output:
 - format: standalone HTML with inline CSS and minimal inline JS; no external network assets
 - opening view: team-level summary with date/period, generated time, workbook link, update coverage, and key delivery/risk narrative
 - coverage accounting: show registered active members, registered updated members, unregistered log-only contributors, and missing registered members separately
-- morning focus block: place `晨会聚焦` after the overview and before member details; include only `业务目标追踪`, `重大进展同步`, `重要风险点`, and `需沟通事项`
-- business goal tracking: for overlapping periods, show one compact card per objective O1-O4 with an evidence-based progress percentage, status, missing proof, and separate risk area; label uncertain percentages as estimated and avoid false precision
-- major progress sync: a visually prominent but compact `重大进展同步` section with all major progress items grouped by goal/project/repo and owner badges
+- morning focus block: place `晨会聚焦` after the overview and before member details; include only `业务目标追踪 — OKR 进度`, `重大进展同步`, `重要风险点`, and `需沟通事项`
+- business goal tracking: render `业务目标追踪 — OKR 进度` as the first sub-section of `晨会聚焦`; for overlapping periods, show one compact card per objective O1-O4 with an evidence-based progress percentage, status (`正常`/`滞后`/`风险`), "到了哪里 / 还差什么", missing proof, and a separate risk area; label uncertain percentages as estimated and avoid false precision; never render a separate generic `业务目标概览`
+- major progress sync: a visually prominent but compact `重大进展同步` section grouped strictly by `O1 SpreadsheetBench`, `O2 Agent Builder`, `O3 Code as Spreadsheet`, `O4 SDK→CLI`, and `基建 & 其他`; omit empty objective groups; inside each group, sort delivered outcomes before in-progress items, merge duplicates, avoid repeating the project name, and show owner badges where useful
 - important risks: a separate `重要风险点` section, grouped first by O1-O4 goal risks, then by other project/team/infrastructure risks; include severity and owner
 - communication items: a `需沟通事项` section for today's discussion/alignment items, each with owner, topic, and desired outcome
 - per-person standup points: a `每人晨会要点` table or dense list before personal details, with columns such as member, status, highlight, next action, and help/risk; this is the meeting script, not the raw detail log
@@ -535,7 +535,7 @@ Team report output:
 - visual style: morning-standup dashboard, scannable on projector, restrained operational UI, no decorative gradient/orb background
 - accessibility: semantic headings, keyboard-friendly controls, readable contrast, responsive layout
 
-Team reports must include the team-level summary, morning focus block, per-person standup points, and each person's section. The default reading path is: team summary -> 晨会聚焦 with business goals, progress, risks, and communication items -> per-person standup points -> compact member cards. The detailed list is for after-meeting follow-up and must not dominate the main view.
+Team reports must include the team-level summary, morning focus block, per-person standup points, and each person's section. The default reading path is: team summary -> 晨会聚焦 with `业务目标追踪 — OKR 进度`, grouped major progress, risks, and communication items -> per-person standup points -> compact member cards. The detailed list is for after-meeting follow-up and must not dominate the main view.
 
 ## Workflow: Help
 
