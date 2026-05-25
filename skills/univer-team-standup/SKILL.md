@@ -84,7 +84,7 @@ Never commit `.univer-agent/` files.
 
 ## Team Remote
 
-Default team workbook unit id:
+Mandatory team workbook unit id:
 
 ```text
 fYmh0HRyTUO6YECQGFScnA0
@@ -102,7 +102,16 @@ Default Univer CLI host:
 https://univer.ai/
 ```
 
-Use this remote as the default shared destination for `ops/team-ops.univer` when the workbook is not bound yet. A local profile or environment variable may override it:
+This remote is mandatory for every worklog write, append publish, auto-submit, commit, and sync. `univer-worklog-append` and `univer-worklog-auto` must never push worklog rows to any other unit id.
+
+Remote override policy:
+
+- `profile.remote_workbook` and `UNIVER_WORKLOG_REMOTE` may be read only to detect drift. They must not redirect append/auto writes away from `fYmh0HRyTUO6YECQGFScnA0`.
+- If a local profile or environment variable points to a different unit id or URL, stop before writing or syncing, warn the user about the mismatch, and use the mandatory team remote only after the user confirms repairing local config.
+- `profile.univer_host` and `UNIVER_WORKLOG_HOST` may not redirect append/auto writes away from `https://univer.ai/`. Before any write/sync, configure the CLI host back to `https://univer.ai/`.
+- Reports may read a user-supplied workbook only when the user explicitly requests that separate read-only source. Append/auto/publish paths remain locked to the mandatory team remote.
+
+Legacy local config fields that may exist:
 
 ```text
 UNIVER_WORKLOG_REMOTE=<remote-id-or-url>
@@ -111,27 +120,36 @@ UNIVER_WORKLOG_HOST=<univer-host-base-url>
 profile.univer_host=<univer-host-base-url>
 ```
 
-When a workflow needs the team-visible workbook, resolve the remote in this order:
+When a workflow writes or syncs the team-visible workbook, resolve the remote as the mandatory team remote only:
 
-1. `profile.remote_workbook`
-2. `UNIVER_WORKLOG_REMOTE`
-3. default team remote above
+```text
+fYmh0HRyTUO6YECQGFScnA0
+```
 
-Resolve the Univer host in this order:
+Resolve the Univer host for writes/syncs as:
 
-1. `profile.univer_host`
-2. `UNIVER_WORKLOG_HOST`
-3. default Univer CLI host above
+```text
+https://univer.ai/
+```
 
 Normalize remote values before running CLI commands:
 
 - If the remote is a full URL like `https://univer.ai/space/sheets/<unitID>`, use `<unitID>` for `univer clone --unit-id` and keep the full URL as the user-facing access link.
-- If the remote is only a unit id, build the access link as `https://univer.ai/space/sheets/<unitID>` unless the host override clearly points to another Univer deployment.
+- If the remote is only the mandatory unit id, build the access link as `https://univer.ai/space/sheets/fYmh0HRyTUO6YECQGFScnA0`.
 - Configure the CLI with the base host, not the workbook URL path: `univer config set univerHost https://univer.ai/`.
 
 Do not use guessed query URLs such as `?unit=<id>&type=2` for success links. Use the `/space/sheets/<unitID>` URL format above.
 
 Do not print access-sensitive remote values in long logs. It is OK to show a short masked form such as `fYmh...cnA0`.
+
+Mandatory remote enforcement checks:
+
+1. Before clone/pull, confirm the target unit id is exactly `fYmh0HRyTUO6YECQGFScnA0` and the CLI base host is `https://univer.ai/`.
+2. After clone/pull, inspect the local workbook binding/status and confirm it is bound to `fYmh0HRyTUO6YECQGFScnA0`. If the binding is missing or different, stop before writing and clone the mandatory team workbook into a fresh package.
+3. Immediately before writing rows, re-check the bound unit id. Do not write rows into a workbook bound to any other remote.
+4. Immediately before commit/sync, run the Univer CLI status/binding check again and verify the destination unit id and access URL are still the mandatory values.
+5. After sync, verify the success link or status points to `https://univer.ai/space/sheets/fYmh0HRyTUO6YECQGFScnA0`.
+6. If the CLI output cannot prove the target unit id, stop before sync and ask the user to review; do not guess.
 
 ## Business Goal Tracking
 
@@ -181,15 +199,16 @@ Rules:
 
 Auto-submit steps:
 
-1. Resolve the team unit id, access URL, and Univer host.
-2. Ensure `univer config get univerHost` matches the resolved base host; set it if needed.
-3. Ensure the workbook is bound to the resolved team unit id. If the local workbook is not bound, clone the team workbook into a local working package with `univer clone <path> --unit-id <unitID>` instead of syncing an unbound workbook and accidentally creating a new remote.
+1. Resolve the mandatory team unit id, access URL, and Univer host from Team Remote; the only allowed write/sync target is `fYmh0HRyTUO6YECQGFScnA0` on `https://univer.ai/`.
+2. Ensure `univer config get univerHost` matches `https://univer.ai/`; set it if needed before pull/write/sync.
+3. Ensure the workbook is bound to `fYmh0HRyTUO6YECQGFScnA0`. If the local workbook is not bound to that exact unit id, clone the team workbook into a local working package with `univer clone <path> --unit-id fYmh0HRyTUO6YECQGFScnA0` instead of syncing an unbound or wrong-bound workbook.
 4. Run `univer pull <bound-workbook>`.
 5. Re-read shared sheets and recompute local write ranges according to Shared Table Merge Policy.
 6. Write and verify rows.
-7. Run `univer status <bound-workbook>`.
-8. If clean and no conflict, run `univer commit` with a concise worklog message, then `univer sync`.
-9. If status is unclear or conflict exists, stop before sync, show review scope, and keep local changes.
+7. Run `univer status <bound-workbook>` and verify the destination is still `fYmh0HRyTUO6YECQGFScnA0`.
+8. If clean, no conflict, and the target id is proven correct, run `univer commit` with a concise worklog message, then `univer sync`.
+9. After sync, verify the success link or status points to `https://univer.ai/space/sheets/fYmh0HRyTUO6YECQGFScnA0`.
+10. If status is unclear, conflict exists, or the target id cannot be proven, stop before sync, show review scope, and keep local changes.
 
 ## Profile Contract
 
@@ -391,17 +410,18 @@ Use for manual rows.
 
 1. Check `univer`/`unv`; avoid network dependency checks unless needed.
 2. Read profile. If missing, run Onboard, then ask whether to continue.
-3. Pull workbook if bound or resolvable through the team remote.
+3. Pull the workbook only from the mandatory team remote `fYmh0HRyTUO6YECQGFScnA0`; if local config points elsewhere, stop and repair before writing.
 4. Inspect personal sheet, `People`, `WorkItems`, and `Audit`.
 5. Build one or more candidate rows from the user's text.
 6. Resolve priority through Priority Policy.
 7. Apply Progress And Risk Prompting Policy: show candidate rows, remind the user to confirm or fill progress, risk, blocker, plan, and next-action fields, then wait for confirmation.
 8. Generate `日志ID` as `YYYYMMDD-<owner_id>-<seq>` in profile timezone, recomputing `<seq>` from the latest remote personal sheet.
 9. Generate `去重键` from owner/date/repo/关联项/title/source when absent.
-10. Write only to `profile.personal_sheet`, following Personal Log Date Field Policy for the `日期` cell.
+10. Re-check that the workbook is bound to `fYmh0HRyTUO6YECQGFScnA0`, then write only to `profile.personal_sheet`, following Personal Log Date Field Policy for the `日期` cell.
 11. Read back and verify key fields, including that `日期` display can be normalized to the intended `YYYY-MM-DD`.
 12. If `日期` displays as a naked serial number, repair the date number format before preview.
 13. Append `Audit`, preview workbook, and stop without commit/sync.
+14. If the user explicitly asks to publish/sync the append result, rerun Mandatory remote enforcement checks and sync only to `fYmh0HRyTUO6YECQGFScnA0`.
 
 ## Workflow: Auto
 
@@ -439,7 +459,7 @@ Deduping rules:
 
 Auto row writing:
 
-1. Read profile, resolve the team remote, pull workbook, and inspect `People`, `WorkItems`, personal log, and `Audit`.
+1. Read profile, enforce the mandatory team remote `fYmh0HRyTUO6YECQGFScnA0`, pull workbook from that remote, and inspect `People`, `WorkItems`, personal log, and `Audit`.
 2. Collect evidence from enabled sources.
 3. Summarize evidence into candidate rows using the Personal Log schema.
 4. Resolve priority from the latest `WorkItems`, GitHub labels, explicit user data, then fallback rules.
@@ -448,8 +468,8 @@ Auto row writing:
 7. Keep `证据` compact: include session id/path, commit/PR/issue links, and test command summaries.
 8. Apply Progress And Risk Prompting Policy: infer progress/risk/blocker/next-action fields when evidence supports them, mark missing items as `需补充` or `待确认`, and pause for review when uncertainty affects the report.
 9. Respect `--dry-run` and `--confirm`.
-10. Before writing, re-check latest personal log `去重键`/`日志ID` and latest shared `People`/`WorkItems`; adjust candidate rows if the remote changed during collection.
-11. Write candidate rows, following Personal Log Date Field Policy for all `日期` cells.
+10. Before writing, re-check latest personal log `去重键`/`日志ID`, latest shared `People`/`WorkItems`, and the workbook binding to `fYmh0HRyTUO6YECQGFScnA0`; adjust candidate rows if the remote changed during collection.
+11. Write candidate rows only into the workbook bound to `fYmh0HRyTUO6YECQGFScnA0`, following Personal Log Date Field Policy for all `日期` cells.
 12. Read back candidate rows, verify date display/normalization, repair naked serial number display if needed, append `Audit`, and preview workbook.
 13. Unless `--no-submit` is present, follow Team Auto Submit.
 
@@ -585,10 +605,12 @@ https://univer.ai/space/sheets/iqf9frj6SACbbXMc06gZ8A3
 
 Run for explicit commit/sync/publish requests, or when Team Auto Submit is reached by `univer-worklog-auto`.
 
-1. Run `univer status ops/team-ops.univer`.
-2. Summarize workbook changes and conflict state.
-3. If conflict or status needs review, stop and explain review scope.
-4. If clean, run `univer commit` and `univer sync` with a concise message.
+1. Enforce Team Remote before doing anything: the publish target must be `fYmh0HRyTUO6YECQGFScnA0` on `https://univer.ai/`.
+2. Run `univer status ops/team-ops.univer` and verify the workbook binding/status proves that exact unit id.
+3. Summarize workbook changes, target unit id, target URL, and conflict state.
+4. If conflict, status needs review, or the target id cannot be proven, stop before commit/sync and explain review scope.
+5. If clean and the mandatory target is proven, run `univer commit` and `univer sync` with a concise message.
+6. After sync, verify the success link or status points to `https://univer.ai/space/sheets/fYmh0HRyTUO6YECQGFScnA0`.
 
 ## Success Messages
 
@@ -603,8 +625,8 @@ After append or auto write:
 - dedupe: <written/skipped>
 - preview: <view_url_or_status>
 - submit: <auto-submitted|local-only|skipped-by-dry-run|blocked-by-conflict>
-- remote: <unitID_or_local_only>
-- link: <https://univer.ai/space/sheets/unitID_or_preview_url>
+- remote: <fYmh0HRyTUO6YECQGFScnA0|local-only-target-fYmh0HRyTUO6YECQGFScnA0>
+- link: <https://univer.ai/space/sheets/fYmh0HRyTUO6YECQGFScnA0|preview_url>
 - visibility: auto-submitted 后团队可见；local-only 时其他人不会看到，除非你明确要求 commit/sync 或团队已有其他发布流程
 - next: 如需发布本地变更，请明确要求 commit/sync
 ```
